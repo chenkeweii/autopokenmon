@@ -37,7 +37,9 @@ Nstbrowser*.exe
 *.zip
 
 # 嵌入式 Python（体积过大，目标机器按 README 自行下载配置）
-python/
+# 但 VC++ Runtime DLL 需要随仓库分发，目标 Windows Server 通常缺少这些库
+python/**
+!python/*.dll
 
 # OSS 工具与文档
 ossutil.exe
