@@ -22,13 +22,6 @@ logs/
 # 旧版本手动备份（应用 git 版本历史代替）
 history/
 
-# PyInstaller 构建产物（可通过 pyinstaller 重新生成）
-build_tmp/
-*.spec
-main.exe
-setup_profiles.exe
-_run_*.bat
-
 # 文档
 README.md
 
@@ -41,6 +34,8 @@ Nstbrowser*.exe
 python/**
 !python/msvcp140*.dll
 
-# OSS 工具与文档
-ossutil.exe
-OSS操作手册.md
+# Playwright 浏览器内核（由 setup_env.bat 在目标机器本地下载，约 200MB）
+browsers/
+
+# setup_env.bat 临时下载的文件
+get-pip.py
