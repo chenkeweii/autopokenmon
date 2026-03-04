@@ -17,9 +17,7 @@ logs/
 .idea/
 
 # 运行时生成的数据（含敏感信息）
-data/emails.csv
-data/accounts.csv
-data/browsers.csv
+# data/ 整体纳入版本管理
 
 # 旧版本手动备份（应用 git 版本历史代替）
 history/
@@ -29,8 +27,10 @@ build_tmp/
 *.spec
 main.exe
 setup_profiles.exe
-AutoPokemon.exe
 _run_*.bat
+
+# 文档
+README.md
 
 # 分发包内的大文件（不纳入版本管理）
 Nstbrowser*.exe
