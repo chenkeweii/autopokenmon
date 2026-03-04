@@ -1,0 +1,124 @@
+@charset "utf-8";
+/*------------------------------------------------------------
+	terms
+------------------------------------------------------------*/
+
+.docArea .scrollBlock {
+    margin-bottom: 3.2rem;
+}
+
+.docArea .scrollBlock .-header {
+    margin-bottom: 0;
+}
+
+.docArea .scrollBlock .-text {
+    max-height: 17lh;
+}
+
+.mailForm .formList .checkboxWrapper {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-direction: row;
+}
+
+.mailForm .formList .checkboxWrapper .-label {
+    display: block;
+    font-size: 1.6rem;
+    margin-left: 1.2rem;
+    font-weight: 500;
+    line-height: 1.79;
+    letter-spacing: 0.02em;
+}
+
+.mailForm .formList .checkboxWrapper .comError {
+    display: block;
+    width: 100%;
+    margin-left: 4.2rem;
+}
+
+#pop01 .inner {
+	margin: 0 auto;
+	padding: 5rem 1.6rem 3.5rem;
+	border-radius: 1rem;
+}
+
+#pop01 .inner .title {
+	font-size: 1.8rem;
+}
+
+#pop01 .inner .linkUl li:not(:last-child) {
+	margin-bottom: 2rem;
+}
+
+#pop01 .inner .linkUl li a {
+	margin: 0 auto;
+	width: 31rem;
+	padding: 1.2rem 0.5rem;
+	display: block;
+	text-align: center;
+	color: #fff;
+	background-color: #0796ff;
+	border-radius: 3rem;
+	font-size: 1.8rem;
+	font-weight: 500;
+}
+
+#pop01 .inner .linkUl li:nth-child(2) a {
+	background-color: transparent;
+	color: #0796ff;
+	font-size: 1.6rem;
+}
+
+#pop01 .close02 {
+	width: 4rem;
+}
+
+@media all and (min-width: 520px) {
+	#main .popLink a:hover {
+		border-color: #0796ff;
+	}
+
+	#main .linkList li:nth-child(2) a:hover {
+		opacity: 0.7;
+	}
+
+	#pop01 .inner .linkUl li a:hover {
+		background-color: #0071E2;
+	}
+
+	#pop01 .inner .linkUl li:nth-child(2) a:hover {
+		opacity: 0.7;
+		background-color: transparent;
+	}
+
+	#pop01 {
+		margin: 0 auto;
+		height: 100%;
+		width: 100%;
+		background-color: transparent;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	#pop01 > div {
+		width: 100%;
+	}
+
+	#pop01 .inner {
+		width: 100%;
+		max-width: 37.5rem;
+	}
+}
+@media all and (max-width: 519px) {
+	#pop01 .inner {
+		width: 91%;
+	}
+
+	#pop01 .inner .title {
+		font-size: 1.4rem;
+		letter-spacing: 0.02em;
+		line-height: 1.55;
+	}
+}

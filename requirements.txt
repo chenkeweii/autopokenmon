@@ -1,0 +1,7 @@
+# 依赖清单
+# 安装命令: pip install -r requirements.txt
+# 首次使用还需执行: playwright install chromium
+
+playwright>=1.40.0
+imapclient>=3.0.0
+requests>=2.31.0

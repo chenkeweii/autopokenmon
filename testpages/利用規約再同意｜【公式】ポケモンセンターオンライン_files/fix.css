@@ -1,0 +1,1383 @@
+@charset "utf-8";
+/*------------------------------------------------------------
+    common/common.css, common/style.cssオーバーライド用css
+------------------------------------------------------------*/
+
+/* sp画面（～520px）のみ改行 */
+@media (min-width: 520px) {
+	.sp_only {
+		display: none;
+    }
+}
+
+/* ベーススタイル */
+.comBox {
+    max-width: 123.2rem; /* コンテンツ中身幅: 1184px */
+}
+
+/* コンテンツ高さが足りない場合フッターを最下部に配置 */
+.fitHeight {
+    min-height: 100svh;
+}
+
+.fitHeight #container {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+}
+
+.fitHeight #gFooter {
+    margin-top: auto;
+}
+
+/* ラインマーカー装飾 */
+
+.lineMarker {
+    background-color: rgba(255, 203, 3, 0.3);
+}
+
+
+/* 青文字テキストリンク */
+.linkText a {
+    display: flex;
+    color: #0796ff;
+    font-size: 1.6rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    vertical-align: top;
+}
+
+/* テキストへの接頭・接尾アイコン追加クラス */
+.comBtn .prepend_icon,
+.prepend_icon,
+.append_icon {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.prepend_icon::before,
+.append_icon::after {
+    content: "";
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: 0.3s;
+}
+
+.prepend_icon::before {
+    margin-right: 0.8rem;
+}
+
+.append_icon::after {
+    margin-left: 0.8rem;
+}
+
+/*
+下記を複製・編集すれば簡単に増やせます。
+.{prepend,append}_icon.-アイコン名::{before,after} {
+	background-image: url(ファイルパス);
+    width: 表示したい幅;
+    height: 表示したい高さ;
+}
+
+.{prepend,append}_icon.-アイコン名:hover:{before,after} {
+	background-image: url(hover時ファイルパス);
+}
+*/
+
+.prepend_icon.-sms01::before {
+	background-image: url(../../images/common/icon_sms01.png);
+    width: 1.9rem;
+    height: 1.65rem;
+}
+
+.prepend_icon.-sms01:hover:before {
+	background-image: url(../../images/common/icon_sms01_over.png);
+}
+
+.prepend_icon.-sms02::before {
+	background-image: url(../../images/common/icon_sms02.png);
+    width: 1.9rem;
+    height: 1.65rem;
+}
+
+.prepend_icon.-sms02:hover:before {
+	background-image: url(../../images/common/icon_sms02_over.png);
+}
+
+.prepend_icon.-phone01::before {
+	background-image: url(../../images/common/icon_phone01.png);
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+.prepend_icon.-phone01:hover:before {
+	background-image: url(../../images/common/icon_phone01_over.png);
+}
+
+.prepend_icon.-prev::before {
+	background-image: url(../../images/common/arrow_prev01_over.png);
+    width: 0.75rem;
+    height: 1.2rem;
+}
+
+.prepend_icon.-prev:hover:before {
+	background-image: url(../../images/common/arrow_prev01_blue_over.png);
+}
+
+.append_icon.-next::after {
+	background-image: url(../../images/common/arrow_next01_over.png);
+    width: 0.75rem;
+    height: 1.2rem;
+}
+
+.append_icon.-next:hover:after {
+	background-image: url(../../images/common/arrow_next01_blue_over.png);
+}
+
+.prepend_icon.-plus::before {
+	background-image: url(../../images/common/icon13.png);
+    width: 1.0rem;
+    height: 1.05rem;
+}
+
+/* （※や・の）リスト用インデント汎用クラス */
+.indent_list {
+    text-indent: -1em;
+    padding-left: 1em;
+}
+
+/* ヘッダーまわり調整 */
+.pageLead {
+    margin-top: 0;
+}
+
+#gHeader .logo {
+    height: 8.9rem;
+}
+
+@media all and (max-width: 1039px) {
+    #gHeader {
+        padding-bottom: 0.5rem;
+    }
+
+    #gHeader .searchBox.sp.open {
+        z-index: 50;
+    }
+}
+
+@media all and (min-width: 1040px) {
+    #gNavi {
+        padding-bottom: 0.1rem;
+    }
+
+    #gHeader {
+        padding-bottom: 0;
+    }
+}
+
+/* 青文字ドロップダウン（キャンセル・返品・交換について等） */
+.noticeArea {
+	margin-bottom: 2.4rem;
+}
+
+.noticeArea .-btn {
+	padding-right: 1.5em;
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	color: #0796ff;
+	border: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	font-size: 1.4rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	transition: 0.3s;
+	cursor: pointer;
+	background: url(../../images/common/icon08_over.png) no-repeat right center / 1.2rem auto;
+}
+.noticeArea .-btn:hover {
+	color: #0071e2;
+}
+
+.noticeArea .-btn.on {
+	background-image: url(../../images/common/icon08_on_over.png);
+}
+
+.noticeArea .-txt {
+	display: none;
+	margin-top: 1.6rem;
+	font-size: 1.2rem;
+	line-height: 1.33;
+	letter-spacing: 0.02em;
+}
+
+.noticeArea .-txt a {
+	opacity: 0.69;
+	text-decoration: underline;
+}
+
+/* コンテンツタイトル上部リンク（マイページへ等） */
+.upperLink {
+    margin: 2.4rem 0 1.3rem;
+}
+
+.upperLink a {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 1.4rem;
+	letter-spacing: -0.01em;
+    color: #0796ff;
+    transition: 0.3s;
+}
+
+.upperLink a:hover {
+    color: #0071e2;
+}
+
+@media (min-width: 520px) {
+	.noticeArea .-txt a:hover {
+		color: rgba(0, 0, 0, 0.9);
+		opacity: 1;
+		text-decoration: none;
+    }
+}
+
+/* 確認ダイアログ用モーダルクラス */
+
+.mfp-fade.mfp-wrap.mfp-ready .mfp-content {
+    position: relative;
+}
+
+.popBox.dialog {
+    position: absolute;
+    width: 100%;
+    max-width: 34.3rem;
+    height: 25.4rem;
+    border-radius: 1rem;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+.popBox.dialog .inner {
+    border-radius: inherit;
+    padding: 4.8rem 1.6rem;
+    height: inherit;
+}
+
+.popBox.dialog .close02 {
+    position: absolute;
+    width: 4.0rem;
+    margin: 0 auto 0;
+    left: 0;
+    right: 0;
+    bottom: -3.2rem;
+    transform: translateY(100%);
+}
+
+@media (min-width: 520px) {
+    .popBox.dialog {
+        max-width: 37.5rem;
+    }
+
+    .popBox.dialog .inner {
+        padding: 4.8rem 3.2rem;
+    }
+}
+
+.comBtn01 a {
+    background-color: #fff;
+}
+
+/* ページネーション */
+
+.pageNavi .prev.disabled,
+.pageNavi .next.disabled {
+    cursor: default;
+    pointer-events: none;
+}
+
+.pageNavi .prev.disabled:hover {
+    background-image: url(../../images/common/arrow03.png);
+}
+
+.pageNavi .next.disabled:hover {
+    background-image: url(../../images/common/arrow04.png);
+}
+
+@media (max-width: 519px) {
+    .pageNavi .prev:not(.disabled) {
+        background-image: url(../../images/common/arrow03_over.png);
+    }
+    .pageNavi .next:not(.disabled) {
+        background-image: url(../../images/common/arrow04_over.png);
+    }
+}
+
+/* 検索サジェスト */
+#gHeader .searchBox .resultsBox {
+    padding: 6rem 2.8rem 2.8rem 3.6rem;
+}
+
+#gHeader .searchBox .resultsUl,
+#gHeader .searchBox .resultsDl .subUl {
+    letter-spacing: -0.1rem;
+}
+@media (max-width: 1038px) {
+    #gHeader .searchBox .resultsBox {
+        width: calc(100% + 3.2rem);
+        max-height: calc(100svh - 19.3rem);
+        padding: 2.0rem 1.6rem 6.3rem;
+        position: relative;
+        left: -1.6rem;
+    }
+    #gHeader .searchBox .resultsBox .subInner {
+        max-height: none;
+        height: 100%;
+    }
+    .is_notify #gHeader .searchBox .resultsBox {
+        max-height: calc(100svh - 23.7rem);
+    }
+
+    #gHeader .close {
+        z-index: 5;
+    }
+    #gHeader .searchBox:not(.is_suggest) .close {
+        position: relative;
+        bottom: -1.2rem;
+    }
+}
+
+
+/* パンくずリスト */
+
+.pagePath li:last-of-type {
+    padding-right: 1.6rem;
+}
+
+@media (max-width: 519px) {
+    .pagePath ul {
+        min-width: auto;
+    }
+    .pagePath li {
+        flex-shrink: 0;
+    }
+}
+
+/* POL_INT-2 */
+
+
+#gHeader .linkList.linkList01 .-empty {
+    width: 2.2rem;
+}
+
+#gHeader .searchBox .clear {
+    position: absolute;
+    top: 4.1rem;
+    right: 2.8rem;
+    width: 2.7rem;
+    height: 2.7rem;
+    transform: translateY(-50%);
+}
+
+.menuBox .linkBox .linkList > li:first-of-type .subList {
+    display: none;
+}
+
+@media all and (max-width: 1039px) {
+    #gHeader .searchBox.sp.open {
+        z-index: 50;
+    }
+}
+
+@media all and (min-width: 1040px) {
+    #gHeader .searchBox .clear {
+        top: 1.6rem;
+        right: 0.6rem;
+        width: 2.0rem;
+        height: 2.0rem;
+        transition: 0.3s;
+        cursor: pointer;
+    }
+
+    #gHeader .searchBox .clear:hover {
+        opacity: 0.7;
+    }
+
+    #gHeader .innerBox .topBox .logList.logList02 a {
+        background-image: url(../../images/common/icon09.png);
+    }
+
+    #gHeader .innerBox .topBox .logList.logList03 a {
+        background-image: url(../../images/common/icon04_size01.png);
+        background-size: 1.6rem auto;
+        background-position: left center;
+    }
+
+    #gHeader .innerBox .topBox .logList.logList03 a:hover {
+        background-image: url(../../images/common/icon04_over.png);
+    }
+
+    #gHeader .innerBox .topBox .logList.logList02 .list01 a {
+        background-image: url(../../images/common/icon05.png);
+        background-size: 1.6rem auto;
+        background-position: left top calc(50% + 0.1rem);
+    }
+}
+
+.menuBox {
+    left: 0;
+    transform: translateX(-101%);
+}
+
+/* POL_INT-3 */
+#gFooter .fBgBox.bgBox01::before {
+    background: url(../../images/common/f_bg02.png) no-repeat center top / 100% auto;
+}
+
+#gFooter .fLinkList a._blank {
+    padding-right: 1.8rem;
+    background: url(../../images/common/icon02.png) no-repeat right top 52% / 1rem auto;
+}
+
+#gFooter .btmText {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+#gFooter .copyright {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+@media all and (min-width: 1040px) {
+    #gFooter .fBgBox.bgBox01::before {
+        background-image: url(../../images/common/f_bg02_pc.png);
+    }
+
+    #gFooter .fLinkUl a {
+        font-size: 1.4rem;
+        background-position: right top 0.5rem;
+    }
+
+    #gFooter .fLinkList a._blank:hover {
+        background-image: url(../../images/common/icon02_over.png);
+    }
+}
+
+/* POL_INT-6 */
+.headLine02 .-annot {
+    font-size: 1.4rem;
+    margin: 0 0 0 1.2rem;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.comSlideBox .slideBox {
+    margin: 0;
+}
+
+.comSlideBox .slideBox .slideWrapper {
+    margin: 0 0 0 1.2rem;
+}
+
+.comSlideBox .slideBox .arrowList li {
+    width: 2.4rem;
+    height: 3.6rem;
+    background-color: rgba(255, 255, 255, 0.6);
+    left: 0;
+}
+
+.comSlideBox .slideBox .arrowList .slick-disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.comSlideBox .slideBox .arrowList li:hover {
+    opacity: 1;
+}
+
+.comSlideBox .slideBox .arrowList .slick-disabled:hover {
+    opacity: 0;
+}
+
+.comSlideBox .slideBox .arrowList li::after {
+    content: "";
+    position: absolute;
+    width: 0.7rem;
+    height: 1.2rem;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    top: 50%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
+}
+
+.comSlideBox .slideBox .arrowList .prev {
+    border-radius: 0 0.4rem 0.4rem 0;
+}
+
+.comSlideBox .slideBox .arrowList .prev::after {
+    background-image: url(../../images/common/arrow_prev01.png);
+}
+
+.comSlideBox .slideBox .arrowList .next {
+    border-radius: 0.4rem 0 0 0.4rem;
+}
+
+.comSlideBox .slideBox .arrowList .next::after {
+    background-image: url(../../images/common/arrow_next01.png);
+}
+
+.comPriceList .txtBox a.ttl {
+    display: block;
+    transition: 0.3s;
+}
+
+.comPriceList .txtBox .text.btm01 + .text {
+    margin-top: -0.4rem;
+}
+
+.comPriceList .txtBox a.ttl:hover {
+	color: #0796ff;
+}
+
+.comPriceList .pho > a {
+    display: block;
+    transition: 0.3s;
+}
+
+.comPriceList .pho > a:hover {
+    transform: translateY(-1rem);
+}
+
+.comPriceList .txtBox .subBox .rBox select,
+.comPriceList .txtBox .subBox .rBox select > option {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: -moz-center;
+    text-align: -webkit-center;
+    text-align-last: center;
+}
+
+.comPriceBox .rBox .subBox .text > a {
+    color: rgba(0, 0, 0, 0.7);
+    text-decoration: underline;
+}
+
+.comPriceBox .rBox .subBox .text > a:hover {
+    text-decoration: none;
+}
+
+/* カルーセルアイテム改デザイン版 */
+.comSlideBox .slideBox .photoList .item > a {
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.comSlideBox .slideBox .photoList .pho {
+    margin: 0 0 1.4rem;
+    height: 16rem;
+}
+
+.comSlideBox .photoList .pho img {
+    height: 100%;
+    object-fit: cover;
+}
+
+.comSlideBox .slideBox .photoList .item .txtImg {
+    margin: 0 1.2rem 0.8rem;
+}
+
+.comSlideBox .slideBox .photoList .tagList02 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0 1.2rem 0.4rem;
+    gap: 0.4rem 0.8rem;
+}
+
+.comSlideBox .slideBox .photoList .tagList02 li {
+    display: block;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1.4rem;
+    width: auto;
+}
+
+.comSlideBox .slideBox .photoList .tagList02 .-new {
+    padding: 0 0.3rem;
+    font-weight: 400;
+    border-radius: 0.2rem;
+    color: #fff;
+    background-color: rgba(220, 34, 4, 1);
+    font-family: "Lato", sans-serif;
+}
+
+.comSlideBox .slideBox .photoList .tagList02 .-restock {
+    color: rgba(220, 34, 0, 0.6);
+}
+
+.comSlideBox .slideBox .photoList .tagList02 .-order {
+    color: rgba(220, 34, 1, 1);
+}
+
+.comSlideBox .slideBox .photoList .tagList02 .-pre_order {
+    color: rgba(113, 195, 17, 1);
+}
+
+.comSlideBox .slideBox .photoList .item .txtBox {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.comSlideBox .slideBox .photoList .item .txtBox .txt {
+    flex-grow: 1;
+}
+
+.comSlideBox .slideBox .photoList .txtBox .price {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
+}
+
+@media all and (max-width: 519px) {
+    .mfp-container {
+        padding-top: 6.4rem;
+    }
+
+    .popBox .close01 {
+        top: -1.6rem;
+        width: 1.4rem;
+        height: 1.4rem;
+        transform: translateY(-100%);
+    }
+}
+
+@media all and (min-width: 1040px) {
+    .comSlideBox .slideBox {
+        margin: 0 auto;
+        width: auto;
+        max-width: none;
+    }
+
+    .comSlideBox .slideBox .slideWrapper {
+        width: 119.2rem;
+        max-width: calc(100% - 4.8rem);
+        margin: 0 auto;
+    }
+
+    .comSlideBox .slideBox .arrowList .prev:hover:after {
+        background-image: url(../../images/common/arrow_prev01_over.png);
+    }
+
+    .comSlideBox .slideBox .arrowList .next:hover::after {
+        background-image: url(../../images/common/arrow_next01_over.png);
+    }
+}
+
+@media (min-width: 520px) {
+    .popBox {
+        margin-left: 0;
+        margin-right: auto;
+    }
+}
+
+/* POL_INT-4 */
+.comltemlist li {
+    padding-bottom: 0;
+}
+
+.comltemlist .txtBox > *:last-child {
+    margin-bottom: 0;
+}
+
+.comltemlist .pho a:hover {
+    transform: translateY(-1rem);
+}
+
+.comltemlist .pho a:hover img {
+    transform: none;
+}
+
+.comltemlist .txt {
+    margin-bottom: 1.2rem;
+}
+
+.comltemlist .price {
+    position: static;
+    padding: 0;
+    margin-bottom: 1.6rem;
+}
+
+.comltemlist .price a {
+    display: flex;
+    align-items: baseline;
+}
+
+.comltemlist .price span {
+    align-self: center;
+    line-height: 1.6rem;
+}
+
+.comltemlist .tagList .new {
+    padding: 0.1rem 0.4rem;
+    font-size: 1.2rem;
+    line-height: 1.6rem;
+}
+
+.comltemlist .txtImg {
+    width: 13.6rem;
+    margin-bottom: 0.8rem;
+}
+
+.comltemlist .tagList {
+    margin: 0;
+    gap: 0.4rem 0.8rem;
+
+}
+
+.comltemlist .tagList li {
+    margin: 0;
+}
+
+.comltemlist .txtImg > img {
+    display: block;
+}
+
+#main .searchBox {
+    position: relative;
+    margin-bottom: 2.4rem;
+}
+#main .searchBox input {
+    padding: 1.2rem 4.2rem;
+    width: 100%;
+    color: #000;
+    font-size: 1.6rem;
+    letter-spacing: 0.02em;
+    box-sizing: border-box;
+    border-radius: 0.8rem;
+    border: 0.1rem solid rgba(0, 0, 0, 0.2);
+    background: url(../../images/common/icon03.png) no-repeat left 1.6rem top calc(50% + 0.1rem) / 1.6rem auto;
+    background-color: #fff;
+    appearance: none;
+    transition: .3s;
+}
+
+#main .searchBox input:hover {
+    border-color: #0796ff;
+}
+#main .searchBox .button:hover {
+    border-color: transparent;
+}
+#main .searchBox .button {
+    padding: 0;
+    width: 3rem;
+    height: 3.2rem;
+    top: 0;
+    left: 0;
+    background-position: left calc(50% + 0.2rem) top calc(50% + 0.1rem);
+    cursor: pointer;
+}
+
+#main .searchBox .clear {
+    position: absolute;
+    top: 50%;
+    right: 1.1rem;
+    width: 2.7rem;
+    height: 2.7rem;
+    transition: 0.3s;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.popBox .narrowBox .accTitle,
+.popBox .narrowBox .subAccTtl {
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.popBox .narrowBox .subAccTtl:hover {
+    color: #0796ff;
+}
+.popBox .narrowBox .subAccTtl:hover::after {
+    background-image: url(../../images/common/icon08_over.png);
+}
+
+.popBox .narrowBox .accTitle.on {
+    background-image: url(../../images/common/icon08_on_over.png);
+}
+
+.popBox .narrowBox .subAccList input ~ span {
+    cursor: pointer;
+    width: 100%;
+}
+
+.popBox .narrowBox .subAccList input ~ span:hover {
+    color: #0796ff;
+}
+
+.popBox .narrowBox .checkResult li {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.popBox .narrowBox .checkResult li .clear {
+    margin-left: auto;
+    width: 2.0rem;
+    height: 2.0rem;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.popBox .narrowBox .checkResult li .clear:hover {
+    opacity: 0.7;
+}
+
+.popBox .narrowBox .priceList li:nth-of-type(2) {
+    font-weight: 600;
+}
+
+.popBox .narrowBox .checkArea {
+    margin-top: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.8rem;
+}
+
+.popBox .narrowBox .checkArea + .indent_list {
+    margin-top: 1.6rem;
+}
+
+.popBox .narrowBox .checkArea .checkBtn {
+    margin: 0;
+}
+
+.comSlideBox.feature .photoList .pho {
+    margin-bottom: 1.6rem;
+}
+
+.comSlideBox.feature .photoList .txtBox .txt {
+    height: auto;
+    display: block;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* POL_INT-5 */
+@media (min-width: 520px) {
+    .comTagBox .rBox {
+        width: 28.97%;
+    }
+
+    .comTagBox .lBox,
+    .comItemBox .comTextBox,
+    .comItemBox .comInfoBox {
+        width: 63.768%;
+        max-width: none;
+    }
+}
+
+.comShopBox .slideBox,
+.comShopBox .phoUl {
+    display: none;
+}
+
+.comShopBox.setSlide .slideBox,
+.comShopBox.setSlide .phoUl {
+    display: block;
+}
+
+.comInfoBox .infoDl dd {
+    display: block;
+}
+
+.comTagBox .numList .num select:disabled {
+    color: rgba(0, 0, 0, 0.3);
+}
+
+.comTagBox .checkDl .checkList input + span,
+.comTagBox .checkDl .checkList a {
+    min-width: 4.4rem;
+    padding: 0;
+}
+
+.comTagBox .btn.default {
+    pointer-events: none;
+}
+
+.comTagBox .selList.initHidden {
+    display: none;
+}
+
+.comTagBox .only {
+    display: none;
+}
+
+.itemDetailAction button {
+    display: block;
+    margin: auto;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
+    border: none;
+    background-color: transparent;
+}
+
+.itemDetailAction button::before {
+    content: '';
+    display: block;
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 0.8rem;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    transition: 0.3s;
+    transform: scale(1);
+}
+
+.itemDetailAction button:active:before {
+    transform: scale(0.95);
+    transition: 0s;
+}
+
+.itemDetailAction .starBtn::before {
+    background-image: url(../../images/common/shop_img01.png);
+}
+
+.itemDetailAction .starBtn.on::before {
+    background-image: url(../../images/common/shop_img01_on.png);
+    transition: 0.3s;
+}
+
+.itemDetailAction .shareBtn::before {
+    background-image: url(../../images/common/shop_img02.png);
+    width: 2.9rem;
+}
+
+.itemDetailAction .shareBtn:hover:before {
+    background-image: url(../../images/common/shop_img02_over.png);
+}
+
+.itemDetailAction button > .txt {
+    color: rgba(0, 0, 0, 0.9);
+}
+
+.shareBtn:hover .pho .img01 {
+    opacity: 0;
+    transition: .3s;
+}
+
+.shareBtn:hover .pho .img02 {
+    opacity: 1;
+    transition: none;
+}
+
+.comShopBox::after {
+    animation: identifier 10s linear infinite;
+}
+
+/* POL_INT-7 */
+.mailForm .formList .indent_list {
+    color: rgba(0, 0, 0, 0.5);
+    margin-top: 0.8rem;
+    font-size: 1.2rem;
+    letter-spacing: -0.01em;
+}
+
+.mailForm .radioList .subBox .indent_list > li {
+    border-bottom: none;
+}
+
+.mailForm .formList dt {
+    margin-bottom: 1rem;
+}
+
+.mailForm .formList dt .-txt {
+    margin-top: 1.1rem;
+    font-weight: 400;
+    line-height: 1.44;
+}
+
+.mailForm .formList dd {
+    position: relative;
+    padding-top: 0;
+}
+
+.mailForm .formList input {
+    padding: 0.5rem 1.5rem;
+    width: 100%;
+    height: 5rem;
+    min-height: 44px;
+    max-height: 50px;
+    color: #000;
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    box-shadow: none;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    border-radius: 0.8rem;
+    background-color: #fff;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.mailForm .formList input[type="number"]::-webkit-inner-spin-button,
+.mailForm .formList input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+    -moz-appearance:textfield;
+}
+.mailForm .formList input[type="text"],
+.mailForm .formList input[type="tel"],
+.mailForm .formList input[type="number"],
+.mailForm .formList input[type="email"],
+.mailForm .formList textarea
+.mailForm .formList select {
+    position: relative;
+    display: block;
+    height: 5rem;
+    min-height: 44px;
+    max-height: 50px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.mailForm .formList select {
+    color: #000;
+}
+
+.mailForm .formList input:disabled,
+.mailForm .formList select:disabled {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.mailForm .formList select:disabled {
+    background-image: url(../../images/common/icon08.png);
+}
+
+.mailForm .formList select.-error,
+.mailForm .formList input.-error {
+    border: solid 1px #d62b1f;
+}
+
+.mailForm .formList select.-error:focus,
+.mailForm .formList input.-error:focus {
+    outline: 3px solid #ffe5e4;
+    outline-offset: -4px;
+}
+
+/* POL_INT-8  */
+.mailForm .radioUl li {
+    padding-left: 0.8rem;
+}
+
+.mailForm .radioList .disabled .radio,
+.mailForm .radioUl .disabled {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.mailForm .radioUl .disabled .comError {
+    padding-bottom: 0.7rem;
+}
+
+.mailForm .radioUl input:disabled + span,
+.mailForm .radioList01 .radio input:disabled + span {
+    color: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
+}
+
+/* POL_INT-9  */
+@media (min-width: 1040px) {
+    .mailForm .tBox.col02 {
+        display: flex;
+        justify-content: space-between;
+    }
+    .mailForm .tBox.col02 .lBox {
+        position: relative;
+        width: 58.11%;
+    }
+    .mailForm .tBox.col02 .rBox {
+        position: relative;
+        width: 36.49%;
+    }
+}
+
+/* POL_INT-16 */
+#main .mailForm .text {
+    margin-bottom: 3.2rem;
+    font-size: 1.6rem;
+    line-height: 1.375;
+    letter-spacing: 0.02em;
+}
+
+#main .mailForm .text:not(:last-of-type) {
+    margin-bottom: 1em;
+}
+
+/* POL_INT-22 */
+
+.mailForm .linkList li:not(:last-of-type) {
+	margin-bottom: 1.6rem;
+}
+
+.mailForm .linkList .btn.disabled,
+.mailForm .linkList a.disabled {
+    pointer-events: none;
+    cursor: default;
+    background: #ccc;
+}
+
+.mailForm .linkList .btn.outline,
+.mailForm .linkList a.outline {
+	color: #0796ff;
+	background: #fff;
+	border: solid 1px #0796ff;
+}
+
+.mailForm .linkList .btn.outline:hover,
+.mailForm .linkList a.outline:hover {
+	color: #0071e2;
+	background: #fff;
+	border-color: #0071e2;
+}
+
+.mailForm .linkList .list03 .btn,
+.mailForm .linkList .list03 a {
+    height: auto;
+	color: rgba(0, 0, 0, 0.5);
+	font-size: 1.2rem;
+	letter-spacing: -0.01em;
+	background: transparent;
+    text-decoration: underline;
+}
+
+.mailForm .linkList .list03 {
+    margin: 3.2rem 0 1.3rem;
+}
+
+.mailForm .linkList .list03 + .list03 {
+    margin-top: 0;
+}
+
+.mailForm .linkList .list03 .btn:hover,
+.mailForm .linkList .list03 a:hover {
+	color: rgba(0, 0, 0, 0.9);
+    text-decoration: none;
+}
+
+/* POL_INT-18 */
+
+.formList .form-birth:not(:last-of-type) {
+    margin-bottom: 0.8rem;
+}
+
+.formList .bannerArea {
+    display: flex;
+    align-items: center;
+    background: url(../../images/common/bg_banner.png) left top;
+    margin: 1.6rem 0 3.2rem;
+    padding: 1.2rem 2.4rem;
+}
+
+@media (max-width: 519px) {
+    .formList .bannerArea {
+        padding: 1.2rem 1.8rem;
+    }
+}
+
+.formList .bannerArea .-img {
+    margin-right: 1.6rem;
+}
+
+.formList .bannerArea.banner_birth .-img {
+    width: 9rem;
+}
+
+.formList .bannerArea.banner_mail_magazine .-img {
+    width: 5.05rem;
+}
+
+.formList .bannerArea .-txt {
+    font-size: 1.2rem;
+    font-weight: 500;
+	letter-spacing: -0.01em;
+}
+
+.mailForm .formList dt a .hoverBox.-password {
+    width: 21.2rem;
+}
+
+.agreementArea {
+    padding: 2.4rem;
+    background-color: rgba(7, 150, 255, 0.05);
+}
+
+.agreementArea.-error {
+    background-color: rgba(255, 229, 228, 1);
+}
+
+.mailForm .checkboxWrapper {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    flex-direction: row-reverse;
+    margin-bottom: 1.6rem;
+}
+
+.mailForm .checkboxWrapper:last-of-type {
+    margin-bottom: 0;
+}
+
+.mailForm .checkboxWrapper > dt {
+    margin: 0 0 0 1.2rem;
+    font-size: 1.6rem;
+}
+
+.mailForm .checkboxWrapper > dt .comError {
+    display: block;
+    margin-left: 0;
+    font-weight: 400;
+
+}
+
+.mailForm .checkboxWrapper input[type="checkbox"] {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    min-height: auto;
+    padding: 0;
+    margin: 0.3rem;
+    transition: 0.3s;
+    letter-spacing: 0.02em;
+    box-shadow: none;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    border-radius: 0.4rem;
+    background-color: #fff;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.mailForm .checkboxWrapper input[type="checkbox"]:checked {
+    background-color: #0796ff;
+    border-color: #0796ff;
+}
+
+.mailForm .checkboxWrapper input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 1.6rem;
+    height: 1.15rem;
+    background-size: cover;
+    background-repeat: no-repeat;
+	background-image: url(../../images/common/icon15_white.png);
+
+}
+
+.mailForm .checkboxWrapper input[type="checkbox"]:focus {
+    outline: none;
+}
+
+.mailForm .checkboxWrapper input[type="checkbox"]:not(:checked):focus {
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.mailForm .checkboxWrapper input[type="checkbox"].-error:not(:checked) {
+    border-color: #d62b1f;
+}
+
+.mailForm .checkboxWrapper input[type="checkbox"].-error:not(:checked):focus {
+    border-color: #d62b1f;
+}
+
+.docArea {
+    margin-bottom: 4.8rem;
+}
+.docArea .scrollBlock {
+    font-size: 1.4rem;
+    margin-bottom: 1.6rem;
+    border: solid 1px rgba(0, 0, 0, 0.05);
+}
+
+.docArea .scrollBlock .-header {
+    padding: 1.2rem;
+    padding-bottom: 1.4rem;
+    border-bottom: solid 1px rgba(0, 0, 0, 0.05);
+    font-weight: 500;
+}
+
+.docArea .scrollBlock .-text {
+    padding: 1.2rem;
+    padding-bottom: 1.4rem;
+    max-height: 12rem;
+    overflow: auto
+}
+
+
+
+.mailForm .formList .passwordWrapper {
+    position: relative;
+}
+
+.mailForm .formList .togglePassword::after {
+    content: "";
+    position: absolute;
+    display: block;
+    margin: auto;
+    width: 1.7rem;
+    height: 1.35rem;
+    background-size: cover;
+    background-repeat: no-repeat;
+	background-image: url(../../images/common/icon_show.png);
+    top: 50%;
+    right: 1.6rem;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.mailForm .formList .togglePassword.is_show::after {
+    width: 1.7rem;
+    height: 1.35rem;
+	background-image: url(../../images/common/icon_hidden.png);
+}
+
+/* SC_K03_03 */
+
+.popBox03 .inner .linkUl li:nth-child(2) a:hover {
+    opacity: 1;
+    color: #0071e2;
+}
+
+
+/*------------------------------------------------------------
+	カスタム　NDIT
+------------------------------------------------------------*/
+
+.hidden {
+    display: none!important;
+}
+

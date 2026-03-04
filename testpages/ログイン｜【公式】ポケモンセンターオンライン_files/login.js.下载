@@ -1,0 +1,322 @@
+$(async function () {
+
+    // 二重押下制御フラグ
+    let processingFlag = false;
+
+    const startProcessing = () => {
+        processingFlag = true;
+    };
+
+    const endProcessing = () => {
+        processingFlag = false;
+    };
+
+    const gigyaLoad = new Promise((resolve, reject) => {
+        $('#gigya-js').attr('src', `${url["gigya.url"]}`);
+        $('#gigya-js').on('load', function () {
+            resolve()
+        }).on("error", function (e) {
+            reject(e)
+        });
+    })
+
+    const recaptchaLoad = new Promise((resolve, reject) => {
+        $('#recaptcha-js').attr('src', `${url["recaptcha.url"]}`);
+        $('#recaptcha-js').on('load', function () {
+            resolve()
+        }).on("error", function (e) {
+            reject(e)
+        });
+    })
+
+    try {
+        await Promise.all([gigyaLoad, recaptchaLoad]);
+    } catch (e) {
+    }
+
+    // エラーメッセージクリア
+    const clearErrorMsg = function () {
+        $(".comErrorBox,.comError").addClass("hidden");
+        $(".comErrorBox > p,.comError").text("");
+        $("#email,#password").removeClass("-error");
+    }
+
+    const isSafeRedirect = (path) => {
+        const unescapedCharRegex = /%[0-9A-Fa-f]{2}/g;
+        if (!path) return false;
+        // 必ず "/" から始まる（相対パス）
+        if (!path.startsWith("/")) return false;
+        // "//evil.com" みたいな scheme-relative も拒否
+        if (path.includes("//")) return false;
+        // "http://", "https://", "javascript:" などを防ぐための念押し
+        if (path.includes("://") || path.includes("javascript:")) return false;
+        // \を拒否
+        if (path.includes("\\")) return false;
+        // "./","../"を拒否
+        if (path.includes("./") || path.includes("../")) return false;
+        if (unescapedCharRegex.test(path)) {
+            return false;
+        }
+
+        return true;
+    };
+
+    // ログインボタン押下時
+    $(".loginBtn").on("click", function (event) {
+
+        if(processingFlag){
+            // 処理中の場合は、重複実行を防ぐために処理を中止する
+            return;
+        }
+
+        // 処理中フラグをセット
+        startProcessing();
+        event.preventDefault();
+        clearErrorMsg();
+        // メールアドレスとパスワードの入力チェック
+        const mailValue = $("#email").val();
+        const passwordValue = $("#password").val();
+        let hasErr = false;
+        if (mailValue === "") {
+            const mailErrorMessage = replacePlaceholders(errMsg["errors.required"], [$('#email').closest('dl').find('label[for="email"]').text()]);
+            $($(".comError")[0]).removeClass("hidden").text(mailErrorMessage);
+            $("#email").addClass("-error");
+            $(".comErrorBox > p").append(`${mailErrorMessage}<br/>`);
+            $(".comErrorBox").removeClass("hidden");
+            hasErr = true;
+        } else if (!$('#email').get(0).checkValidity()) {
+            const mailErrorMessage = $('#email').get(0).validationMessage;
+            $($(".comError")[0]).removeClass("hidden").text(mailErrorMessage);
+            $("#email").addClass("-error");
+            $(".comErrorBox > p").append(`${mailErrorMessage}<br/>`);
+            $(".comErrorBox").removeClass("hidden");
+            hasErr = true;
+        }
+        if (passwordValue === "") {
+            const passwordErrorMessage = replacePlaceholders(errMsg["errors.required"], [$('#password').closest('dl').find('label[for="password"]').text()]);
+            $($(".comError")[1]).removeClass("hidden").text(passwordErrorMessage);
+            $("#password").addClass("-error");
+            $(".comErrorBox > p").append(`${passwordErrorMessage}<br/>`);
+            $(".comErrorBox").removeClass("hidden");
+            hasErr = true;
+        } else if (!$('#password').get(0).checkValidity()) {
+            const passwordErrorMessage = $('#password').get(0).validationMessage;
+            $($(".comError")[1]).removeClass("hidden").text(passwordErrorMessage);
+            $("#password").addClass("-error");
+            $(".comErrorBox > p").append(`${passwordErrorMessage}<br/>`);
+            $(".comErrorBox").removeClass("hidden");
+            hasErr = true;
+        }
+        if (hasErr) {
+            endProcessing();
+            return;
+        }
+
+        // ログイン処理
+        const callbackLogin = (response) => {
+            if (!!response.UID){
+                sessionStorage.setItem("UserId", response.UID);
+            }
+            if (response.errorCode === 0) {
+                // 正常終了処理を実装、「SC_O04_10_抽選応募」画面に遷移する
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect');
+                endProcessing();
+                if (!!redirect) {
+                    if (isSafeRedirect(redirect)) {
+                        // URLSearchParams が decode しているので、decodeURIComponent は不要
+                        location.href = redirect;
+                    }
+                } else {
+                    location.href = routers.SC_O04_10;
+                }
+            } else if (response.errorCode === 401022) {
+
+                //reCAPTCHA v3 エラーの実装 当該画面で表示
+                $(".comErrorBox > p").text(errMsg["error.SC_O04_09.00001"])
+                $(".comErrorBox").removeClass("hidden");
+                endProcessing();
+            } else if (response.errorCode === 206001) {
+                // 再同意が必要
+                localStorage.setItem("regToken_" + sessionStorage.getItem("UserId"), response.regToken)
+                sessionStorage.setItem("termsOfUse", (!response.missingRequiredFields?.includes("preferences.terms.pokemonCenterOnline.isConsentGranted")).toString())
+                sessionStorage.setItem("personalPolicy", (!response.missingRequiredFields?.includes("preferences.privacy.pokemon.isConsentGranted")).toString())
+                endProcessing();
+                location.href = routers.SC_O04_11
+            } else if (response.errorCode === 403048) {
+                // API Rate Limitを超過する場合 当該画面で表示
+                $(".comErrorBox > p").text(errMsg["error.SC_O04_09.00003"])
+                $(".comErrorBox").removeClass("hidden")
+                endProcessing();
+            } else if (response.errorCode === 403101) {
+                // 二要素認証が必要
+                localStorage.setItem("regToken_" + sessionStorage.getItem("UserId"), response.regToken)
+                initTFA().then(() => {
+                    let redirectUrl = routers.SC_O04_12;
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect');
+                    endProcessing();
+                    if (!!redirect) {
+                        if (isSafeRedirect(redirect)) {
+                            redirectUrl += `?redirect=${encodeURIComponent(redirect)}`;
+                            location.href = redirectUrl;
+                        }
+                    } else {
+                        location.href = redirectUrl;
+                    }
+                });
+            } else {
+                // それぞれエラーの実装 当該画面で表示
+                $(".comErrorBox > p").text(errMsg["error.SC_O04_09.00002"])
+                $(".comErrorBox").removeClass("hidden")
+                endProcessing();
+            }
+        }
+
+            // ログイン処理で使用するSAP CDC APIメソッドを実行
+            window.gigya.accounts.login({
+                callback: callbackLogin,
+                loginID: mailValue,
+                password: passwordValue,
+                include: 'missing-required-fields'
+            })
+
+        // 二要素認証処理初期化
+        const initTFA = function() {
+            return new Promise((resolve, reject) => {
+                const callbackInitTFA = (response) => {
+                    // 二要素認証処理初期化のエラーチェック
+                    if (response.errorCode === 403110 || response.errorCode === 400006) {
+                        // ログイン処理を実装
+                        endProcessing();
+                        location.href = routers.SC_O04_09
+                        reject();
+                        return;
+                    } else if (response.errorCode === 403048) {
+                        // エラー処理を実装
+                        $(".comErrorBox > p").text(errMsg["error.SC_O04_09.00003"])
+                        $(".comErrorBox").removeClass("hidden")
+                        endProcessing();
+                        reject();
+                        return;
+                    } else if (response.errorCode !== 0) {
+                        // エラー処理を実装
+                        $(".comErrorBox > p").text(errMsg["error.SC_O04_09.00004"])
+                        $(".comErrorBox").removeClass("hidden")
+                        endProcessing();
+                        reject();
+                        return;
+                    }
+
+                    // SAP CDC APIメソッドのレスポンスからgigyaAssertionを取得
+                    var gigyaAssertion = response.gigyaAssertion;
+                    localStorage.setItem("gigyaAssertion_" + sessionStorage.getItem("UserId"), gigyaAssertion);
+
+                    // 二要素認証発行
+                    sendPassCode(gigyaAssertion).then(() => {
+                        resolve();
+                    }).catch(() => {
+                        reject();
+                    });
+                };
+
+                // 二要素認証処理初期化で使用するSAP CDC APIメソッドを実行
+                window.gigya.accounts.tfa.initTFA({
+                    callback: callbackInitTFA, // コールバック関数
+                    regToken: localStorage.getItem("regToken_" + sessionStorage.getItem("UserId")), // ログイン処理のコールバック関数で取得した値
+                    provider: "gigyaEmail", // 固定値
+                    mode: "verify", // 固定値
+                });
+            });
+        };
+
+        // 二要素認証発行
+        const sendPassCode = (gigyaAssertion) => {
+            return new Promise((resolve, reject) => {
+                // 会員情報取得処理
+                const callbackGetEmails = (response) => {
+                    // メールアドレスID取得処理のエラーチェック
+                    if (response.errorCode !== 0) {
+                        // エラー処理を実装
+                        $(".comErrorBox > p").text(errMsg["error.SC_O04_09.00004"])
+                        $(".comErrorBox").removeClass("hidden")
+                        endProcessing();
+                        reject();
+                        return;
+                    }
+        
+                    // SAP CDC APIメソッドのレスポンスからemailsを取得
+                    const emails = response.emails;
+        
+                    // emailsに含まれる emailIDを取得
+                    var emailID = null;
+                    if (emails && Array.isArray(emails) && emails.length > 0 && emails[0] && emails[0].id) {
+                        emailID = emails[0].id;
+                    }
+        
+                    // 二要素認証用コード生成処理
+                    const callbackSendVerificationCode = (response) => {
+                        // 二要素認証用コード生成処理のエラーチェック
+                        if (response.errorCode !== 0) {
+                            // エラー処理を実装
+                            $(".comErrorBox > p").append(errMsg["error.SC_O04_09.00004"]);
+                            $(".comErrorBox").removeClass("hidden");
+                            endProcessing();
+                            reject();
+                            return;
+                        }
+        
+                        // SAP CDC APIメソッドのレスポンスからphvTokenを取得
+                        var phvToken = response.phvToken;
+                        localStorage.setItem("phvToken_" + sessionStorage.getItem("UserId"), phvToken);
+                        // 正常終了処理を実装
+                        resolve();
+                    }
+        
+                    // 二要素認証用コード生成処理で使用するSAP CDC APIメソッドを実行
+                    window.gigya.accounts.tfa.email.sendVerificationCode({
+                        callback: callbackSendVerificationCode, // コールバック関数
+                        gigyaAssertion: gigyaAssertion,         // 二要素認証処理初期化のコールバック関数で取得した値
+                        emailID: emailID,                       // メールアドレスID取得処理のコールバック関数で取得した値
+                        lang: "ja",                             // 固定値
+                    });
+        
+                }
+        
+                // メールアドレスID取得処理で使用するSAP CDC APIメソッドを実行
+                window.gigya.accounts.tfa.email.getEmails({
+                    callback: callbackGetEmails,    // コールバック関数
+                    gigyaAssertion: gigyaAssertion, // 二要素認証処理初期化のコールバック関数で取得した値
+                });
+            });
+        };
+    })
+
+    // パスワードリセットボタン押下時
+    $("#passwordResetBtn").on("click", function (event) {
+        event.preventDefault();
+        clearErrorMsg();
+        location.href = `${url["ec.site.password.reset.url"]}`
+    })
+
+    // パスワードリセットリンク押下時
+    $("#passwordResetLink").on("click", function (event) {
+        event.preventDefault();
+        clearErrorMsg();
+        location.href = `${url["ec.site.password.reset.url"]}`
+    })
+
+    // 新規会員登録へ進むボタン押下時
+    $("#newMemberLoginBtn").on("click", function (event) {
+        event.preventDefault();
+        clearErrorMsg();
+        location.href = `${url["ec.site.login.url"]}`
+    })
+
+    // エラーメッセージ置換
+    function replacePlaceholders(str, values) {
+        let counter = 0;
+        return str.replace(/\{0\}/g, () => values[counter++]);
+    }
+
+});

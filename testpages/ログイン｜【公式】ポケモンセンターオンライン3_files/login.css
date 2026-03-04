@@ -1,0 +1,62 @@
+@charset "utf-8";
+/*------------------------------------------------------------
+	login
+------------------------------------------------------------*/
+
+.login .comLoginBox .lBox,
+.login .comLoginBox .rBox {
+    width: 56rem;
+}
+
+.login .mailForm {
+    margin-bottom: 5.4rem;
+}
+
+.login .mailForm .formDl {
+    width: auto;
+}
+
+.login .comLoginBox .rBox {
+    padding: 4.0rem 3.2rem 3.5rem;
+    background: #f7f7f7;
+}
+
+.login .mailForm .linkList .btn.outline {
+    background: transparent;
+}
+
+@media (min-width: 520px) {
+    .login .comLoginBox {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 6.4rem;
+    }
+}
+
+@media (max-width: 519px) {
+    .login .mailForm .formDl {
+        margin-bottom: 4.0rem;
+    }
+
+    .login .comLoginBox {
+        padding: 0;
+    }
+
+    .login .comLoginBox .lBox,
+    .login .comLoginBox .rBox {
+		width: auto;
+        padding: 0 1.6rem;
+    }
+
+    .login .comLoginBox .lBox {
+        margin-bottom: 3.5rem;
+    }
+
+    .login .comLoginBox .rBox {
+        padding-top: 3.7rem;
+        padding-bottom: 3.5rem;
+    }
+}
+
+

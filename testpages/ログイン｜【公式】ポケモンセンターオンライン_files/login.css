@@ -1,0 +1,39 @@
+@charset "utf-8";
+/*------------------------------------------------------------
+	lottery_login
+------------------------------------------------------------*/
+#main .mailForm {
+	margin-top: 1.4rem;
+}
+#main .mailForm .formList dt {
+	margin-bottom: 0.5rem;
+}
+#main .mailForm .formList dd {
+	margin-bottom: 3rem;
+}
+#main .mailForm .formDl.mb01 {
+	margin-bottom: 4rem;
+}
+#main .mailForm .comBox {
+	padding: 0;
+}
+#main .linkList li {
+	margin-bottom: 1.9rem;
+}
+#main .linkList .list02 a {
+	height: 5rem;
+	color: #0796FF;
+	border: 0.2rem solid #0796FF;
+	background-color: #fff;
+	border-radius: 2.5rem;
+	font-size: 1.8rem;
+}
+#main .mailForm .formList input {
+	padding-right: 4rem;
+}
+@media all and (min-width: 520px) {
+	#main .linkList .list02 a:hover {
+		background-color: rgba(6, 150, 255, 0.1);
+	}
+}
+

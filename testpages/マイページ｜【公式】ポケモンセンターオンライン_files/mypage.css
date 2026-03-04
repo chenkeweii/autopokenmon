@@ -1,0 +1,181 @@
+@charset "utf-8";
+/*------------------------------------------------------------
+	mypage
+------------------------------------------------------------*/
+#main .flexBox {
+	margin: 0 auto;
+	display: flex;
+	flex-wrap: wrap;
+}
+#main .flexBox .lBox {
+	width: 50%;
+}
+#main .flexBox .rBox {
+	padding: 4rem 0 0;
+	width: 43.4%;
+}
+#main .flexBox .lBox .photoBox {
+	margin: -5.6rem auto 3.8rem;
+	width: 8.95rem; 
+	z-index: 2;
+	position: relative;
+}
+#main .flexBox .lBox .textBox {
+	margin-bottom: 2.6rem;
+	padding: 0 1.6rem 4.1rem;
+}
+#main .flexBox .lBox .textBox .centerTxt {
+	margin-bottom: 4.8rem;
+	font-size: 1.4rem;
+	text-align: center;
+	line-height: 1.45;
+	letter-spacing: 0.02em;
+}
+#main .flexBox .lBox .textBox .centerTxt .star {
+	display: inline-flex;
+	align-items: center;
+}
+#main .flexBox .lBox .textBox .centerTxt .star img {
+	margin: 0 0.3rem;
+	width: 1.2rem;
+	display: block;
+}
+#main .linkBox {
+	margin: 0 auto;
+	max-width: 34.3rem;
+}
+#main .linkBox .phoLinkBox {
+	margin-bottom: 2.7rem;
+	text-align: center;
+}
+#main .linkBox .phoLinkBox a {
+	display: block;
+	filter:
+		drop-shadow(0px 0.2rem 0.4rem rgba(0, 0, 0, 0.24))
+}
+#main .linkBox .linkUl {
+	padding: 0;
+	max-width: inherit;
+}
+#main .linkBox li {
+	margin: 0;
+	width: calc(50% - 0.4rem);
+}
+
+.comSlideBox01 .slideUl .item {
+	display: none;
+}
+
+.comSlideBox01 .slideUl .item .pho {
+	padding-top: 1rem;
+	width: auto;
+}
+
+.comSlideBox01 .slideUl .pho a {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 20rem;
+}
+
+.comSlideBox01 .slideUl .pho a img {
+	height: 100%;
+}
+
+.comSlideBox01 .slideUl .item .comBtn01 {
+	margin-top: 1.9rem;
+}
+
+.comTabPanel .tabBox .textUl .quit {
+	font-weight: 400;
+}
+
+.comTabPanel .tabBox .noLink {
+	color: #ccc;
+}
+
+@media all and (min-width: 520px) {
+	
+	#main .linkBox .phoLinkBox a {
+		transform: translateY(0);
+	}
+
+	#main .linkBox .phoLinkBox a:hover {
+		transform: translateY(-1rem);
+	}
+
+	.comSlideBox01 .slideUl .pho a:hover {
+		transform: translateY(-0.7rem);
+	}
+
+	.comTabPanel .tabUl li a:hover,
+	.comTabPanel .tabBox .textUl li a:hover,
+	.comTabPanel .tabBox .logoutTxt a:hover {
+		opacity: 1;
+		color: #0796ff;
+	}
+
+	.comTabPanel .tabBox .logoutTxt a:hover {
+		background-image: url("../../images/common/m_img27_over.png");
+	}
+	.comSlideBox01 .slick-arrow.slick-prev,
+	.comSlideBox01 .slick-arrow.slick-next {
+		top: 8rem;
+	}
+}
+@media all and (max-width: 519px) {
+	#main .flexBox {
+		display: block;
+	}
+	#main .flexBox .lBox {
+		width: 100%;
+	}
+	#main .flexBox .rBox {
+		padding: 0;
+		width: 100%;
+	}
+	#main .flexBox .lBox .photoBox {
+		margin: -6.2rem auto 2.8rem;
+	}
+	#main .linkBox {
+		margin: 0;
+		max-width: inherit;
+		padding: 0 0.7rem 2.9rem;
+		border-bottom: 1rem solid rgba(0, 0, 0, 0.05);
+	}
+	#main .linkBox .phoLinkBox {
+		margin-bottom: 0.4rem;
+	}
+	#main .linkBox .phoLinkBox a {
+		padding: 0.6rem 0.9rem 1.2rem;
+	}
+	#main .textBox .centerTxt {
+		font-size: 1.4rem;
+	}
+	#main .textBox .comBtn01 {
+		max-width: inherit;
+	}
+	#main .linkBox .comBtn01 {
+		max-width: inherit;
+	}
+	#main .linkBox li {
+		width: calc(50% - 0.5rem);
+	}
+	#main .linkBox .linkUl {
+		padding: 0 1rem;
+		margin: 0 auto;
+	}
+	#main .flexBox .lBox .textBox {
+		border-bottom: 1rem solid rgba(0, 0, 0, 0.05);
+	}
+	#main .pageLead01 .img01 {
+		top: calc(50% + 1.8rem);
+	}
+	.comSlideBox01 .slideUl .pho a {
+		height: 13rem;
+	}
+	.comSlideBox01 .slick-arrow.slick-prev,
+	.comSlideBox01 .slick-arrow.slick-next {
+		top: 3.8rem;
+	}
+}

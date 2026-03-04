@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# 日志（运行时生成）
+logs/
+
+# 敏感配置（如果日后迁移到 .env 管理）
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# 运行时生成的数据（含敏感信息）
+data/emails.csv
+data/accounts.csv
+data/browsers.csv
+
+# 旧版本手动备份（应用 git 版本历史代替）
+history/
+
+# PyInstaller 构建产物（可通过 pyinstaller 重新生成）
+build_tmp/
+*.spec
+main.exe
+setup_profiles.exe
+AutoPokemon.exe
+_run_*.bat
+
+# 分发包内的大文件（不纳入版本管理）
+Nstbrowser*.exe
+*.zip
+
+# 嵌入式 Python（体积过大，目标机器按 README 自行下载配置）
+python/
+
+# OSS 工具与文档
+ossutil.exe
+OSS操作手册.md

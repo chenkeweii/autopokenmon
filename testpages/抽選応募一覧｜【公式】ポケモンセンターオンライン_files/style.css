@@ -1,0 +1,974 @@
+@charset "utf-8";
+/*------------------------------------------------------------
+	デフォルトスタイル
+------------------------------------------------------------*/
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, figcaption, figure, section {
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	outline: 0;
+	font-size: 1em;
+	box-sizing: border-box;
+}
+html {
+	font-size: 62.5%;
+}
+@media all and (max-width: 519px) {
+	html {
+		font-size: 2.6667vw;
+	}
+}
+@media (min-width: 520px) and (max-width: 1039px) {
+	html {
+		font-size: 0.9615vw;
+	}
+}
+body, table, input, textarea, select, option, button {
+	font-family: "Noto Sans JP", sans-serif;
+}
+article, aside, canvas, details, figcaption, figure, footer, header, main, hgroup, menu, nav, section, summary {
+	display: block;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+:focus {
+	outline: 0;
+}
+ins {
+	text-decoration: none;
+}
+del {
+	text-decoration: line-through;
+}
+img {
+	vertical-align: top;
+	max-width: 100%;
+	height: auto;
+}
+address {
+	font-style: normal;
+}
+a,
+a:link {
+	color: rgba(0,0,0,0.9);
+	text-decoration: none;
+	transition: 0.3s;
+}
+a:visited {
+	color: rgba(0,0,0,0.9);
+}
+a:hover {
+	color: rgba(0,0,0,0.9);
+}
+a:active {
+	color: rgba(0,0,0,0.9);
+}
+* chrome_annotation {
+	border: none !important;
+}
+/*------------------------------------------------------------
+	レイアウト
+------------------------------------------------------------*/
+body {
+	color: rgba(0,0,0,0.9);
+	font-size: 1.6rem;
+	line-height: 1.5;
+	text-size-adjust: none;
+	-webkit-text-size-adjust: none;
+	background-color: #FFF;
+}
+.fixed {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+}
+#container {
+	text-align: left;
+}
+.fax,
+a[href^="tel:"] {
+	cursor: default;
+	pointer-events: none;
+}
+@media all and (min-width: 1040px) {
+	.sp {
+		display: none !important;
+	}
+}
+@media all and (max-width: 1039px) {
+	.pc {
+		display: none !important;
+	}
+}
+@media all and (max-width: 519px) {
+	body {
+		min-width: inherit;
+		font-size: 1.6rem;
+	}
+	a:hover,
+	a:hover img {
+		opacity: 1 !important;
+	}
+	a[href^="tel:"] {
+		cursor: pointer;
+		pointer-events: auto;
+	}
+}
+/*------------------------------------------------------------
+	ヘッダー
+------------------------------------------------------------*/
+#gHeader {
+	padding-bottom: 1rem;
+	position: relative;
+	background-color: #FFF;
+}
+#gHeader .tBox {
+	height: 4.2rem;
+	background: url(../../images/common/h_bg01.png) no-repeat center top calc(50% + 0.2rem) / 26.7rem auto,linear-gradient(#ddd 0%, #cecfce 100%);
+}
+#gHeader .logo {
+	margin: -3.4rem auto 0;
+	width: 9.1rem;
+	border: 0.7rem solid #fff;
+	border-left-width: 0.8rem;
+	border-right-width: 0.8rem;
+	border-radius: 50%;
+}
+#gHeader .linkList {
+	max-width: 30%;
+	display: flex;
+	align-items: center;
+	position: absolute;
+	right: 2.5rem;
+	top: 6.2rem;
+}
+#gHeader .linkList li:not(:last-of-type) {
+	margin-right: 2.3rem;
+}
+#gHeader .linkList a {
+	width: 3rem;
+	height: 2rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+#gHeader .linkList img {
+	width: 2.2rem;
+}
+#gHeader .linkList.linkList01 {
+	top: 6.1rem;
+}
+#gHeader .linkList.linkList01 img {
+	width: 2.5rem;
+}
+#gHeader .menu {
+	width: 3rem;
+	height: 2rem;
+	position: absolute;
+	left: 1.8rem;
+	top: 5.6rem;
+	cursor: pointer;
+}
+#gHeader .menu span {
+	width: 1.7rem;
+	height: 0.2rem;
+	position: absolute;
+	left: calc(50% - 0.8rem);
+	top: 0.9rem;
+	background-color: #000;
+	transition: .3s;
+}
+#gHeader .menu span:nth-of-type(2) {
+	top: 1.5rem;
+}
+#gHeader .menu span:nth-of-type(3) {
+	top: 2.1rem;
+}
+#gHeader .search {
+	width: 3rem;
+	height: 3rem;
+	position: absolute;
+	left: 7.4rem;
+	top: 5.6rem;
+	background: url(../../images/common/icon03.png) no-repeat center center / 2rem auto;
+	cursor: pointer;
+}
+#gHeader .searchBox {
+	padding: 1.7rem 1.6rem 2.4rem;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	top: 100%;
+	box-sizing: border-box;
+	background-color: #fff;
+	display: none;
+}
+#gHeader .searchBox.open {
+	display: block;
+}
+#gHeader .searchBox input {
+	padding: 0.5rem 4.1rem;
+	width: 100%;
+	height: 5rem;
+	color: #000;
+	font-size: 1.6rem;
+	letter-spacing: 0.02em;
+	box-sizing: border-box;
+	border-radius: 0.8rem;
+	border: 0.1rem solid rgba(0, 0, 0, 0.2);
+	background: url(../../images/common/icon03.png) no-repeat left 1.6rem top calc(50% + 0.1rem) / 1.6rem auto;
+	background-color: #fff;
+	appearance: none;
+	position: relative;
+	z-index: 4;
+}
+#gHeader .searchBox input:focus {
+	border-color: #0796FF;
+}
+#gHeader .searchBox .button {
+	width: 4rem;
+	height: 5rem;
+	position: absolute;
+	left: 0;
+	top: 1.7rem;
+	border-color: transparent;
+	background: url(../../images/common/icon03.png) no-repeat left calc(50% - 0.1rem) top calc(50% + 0.1rem) / 1.6rem auto;
+}
+#gHeader .searchBox input::-webkit-input-placeholder {
+	color: rgba(0, 0, 0, 0.3);
+}
+#gHeader .searchBox input:-moz-placeholder {
+	color: rgba(0, 0, 0, 0.3);
+}
+#gHeader .searchBox input::-moz-placeholder {
+	color: rgba(0, 0, 0, 0.3);
+}
+#gHeader .searchBox input:-ms-input-placeholder {
+	color: rgba(0, 0, 0, 0.3);
+}
+#gHeader .searchBox .resultsBox {
+	padding: 5.5rem 3.7rem 0;
+	position: absolute;
+	top: -0.6rem;
+	left: -0.6rem;
+	box-sizing: border-box;
+	width: 28.4rem;
+	background-color: #fff;
+	border-radius: 1rem;
+	box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16);
+	z-index: 3;
+	display: none;
+}
+#gHeader .searchBox .clear {
+	position: relative;
+	z-index: 4;
+}
+#gHeader .searchBox .resultsUl {
+	margin-bottom: 1.6rem;
+}
+#gHeader .searchBox .resultsUl li {
+	margin-bottom: 1rem;
+}
+#gHeader .searchBox a {
+	font-size: 1.6rem;
+	font-weight: 500;
+	color: #0796FF;
+}
+#gHeader .searchBox .resultsDl dt {
+	margin-bottom: 1rem;
+	font-size: 1.4rem;
+	font-weight: 500;
+}
+#gHeader .searchBox .resultsDl dd li {
+	margin-bottom: 0.9rem;
+}
+.menuBox {
+	padding-bottom: 5.1rem;
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	left: 0;
+	top: 0;
+	box-sizing: border-box;
+	background-color: #fff;
+	overflow-y: auto;
+	transform: translateX(101%);
+	transition: .3s;
+	z-index: 1111;
+}
+.menuBox.open {
+	transform: translateX(0);
+}
+.menuBox .close {
+	margin-left: auto;
+	padding: 0.4rem 0.2rem 0.2rem 0.4rem;
+	width: 4.8rem;
+	height: 4.8rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+.menuBox .close img {
+	width: 1.4rem;
+}
+.menuBox .innerBox {
+	padding: 1rem 1.6rem 3rem;
+}
+.menuBox .innerBox .linkList {
+	margin: 0 -1.6rem 2.6rem;
+	padding: 0 1.6rem 2.2rem;
+	border-bottom: 1rem solid rgba(0, 0, 0, 0.05);
+}
+.menuBox .innerBox .linkList.linkList02 {
+	margin-bottom: 2.7rem;
+	padding-bottom: 2.5rem;
+	border-bottom: none;
+	position: relative;
+}
+.menuBox .innerBox .linkList.linkList02::after {
+	width: calc(100% - 3.2rem);
+	height: 0.2rem;
+	position: absolute;
+	left: 1.6rem;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.05);
+	content: '';
+}
+.menuBox .innerBox .linkList > li {
+	margin-bottom: 2rem;
+}
+.menuBox .innerBox .linkList > li:last-of-type {
+	margin-bottom: 0;
+}
+.menuBox .innerBox .linkList a {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.menuBox .innerBox .linkList > li.list01 a {
+	padding-right: 2rem;
+	background: url(../../images/common/icon06.png) no-repeat right top calc(50% - 0.2rem) / 0.8rem auto;
+}
+.menuBox .innerBox .linkList .img {
+	margin-top: 0.4rem;
+	width: 1.8rem;
+}
+.menuBox .innerBox .linkList li:first-of-type .img {
+	margin-top: 0.5rem;
+}
+.menuBox .innerBox .linkList .txt {
+	width: calc(100% - 2.4rem);
+	font-size: 1.7rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+}
+.menuBox .innerBox .linkList .subBox {
+	margin: 0.6rem 0 2.6rem;
+	padding: 1.6rem 1.4rem 1.6rem;
+	border-radius: 1.2rem;
+	background-color: rgba(0, 0, 0, 0.05);
+}
+.menuBox .innerBox .linkList .subBox .phoList {
+	margin: -0.4rem 1.7rem 1.2rem 1.9rem;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+.menuBox .innerBox .linkList .subBox .phoList::after {
+	width: calc((100% - 1.5rem) / 3);
+	content: '';
+}
+.menuBox .innerBox .linkList .subBox .phoList li {
+	margin-top: 0.4rem;
+	width: calc((100% - 1.5rem) / 3);
+}
+.menuBox .innerBox .linkList .subBox .btn {
+	margin: 0 auto;
+	max-width: 45rem;
+}
+.menuBox .innerBox .linkList .subBox .btn a {
+	padding: 0.7rem 1rem 0.9rem;
+	display: block;
+	color: #0796ff;
+	font-size: 1.6rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	text-align: center;
+	border: 0.2rem solid #0796ff;
+	border-radius: 9rem;
+}
+.menuBox .innerBox .linkList01 {
+	margin-bottom: 2.4rem;
+	padding-bottom: 2.3rem;
+}
+.menuBox .innerBox .linkList01 li:first-of-type .img {
+	margin-top: 0.3rem;
+}
+.menuBox .innerBox .linkUl {
+	margin-bottom: 3.7rem;
+}
+.menuBox .innerBox .linkUl li:not(:last-of-type) {
+	margin-bottom: 1.8rem;
+}
+.menuBox .innerBox .linkUl a {
+	display: inline-block;
+	font-size: 1.6rem;
+	font-weight: 500;
+	line-height: 1.88;
+	letter-spacing: -0.01em;
+	vertical-align: top;
+}
+.menuBox .innerBox .linkUl a[target="_blank"] {
+	padding-right: 1.9rem;
+	background: url(../../images/common/icon02.png) no-repeat right top 1.2rem / 1rem auto;
+}
+.menuBox .linkBox {
+	display: none;
+}
+.menuBox .linkBox .title {
+	margin-bottom: 1.6rem;
+	text-align: center;
+}
+.menuBox .linkBox .title a {
+	padding: 1rem 3rem;
+	display: block;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	background: url(../../images/common/icon07.png) no-repeat left 1.6rem center / 0.8rem auto;
+	background-color: rgba(0, 0, 0, 0.05);
+}
+.menuBox .linkBox .title span {
+	padding-left: 2.5rem;
+	display: inline-block;
+	vertical-align: top;
+	background: url(../../images/common/m_img02.png) no-repeat left top calc(50% + 0.1rem) / 1.8rem auto;
+}
+.menuBox .linkBox .linkList {
+	padding: 0 1.6rem;
+}
+.menuBox .linkBox .linkList > li {
+	margin-bottom: 1.6rem;
+}
+.menuBox .linkBox .linkList > li > a {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: url(../../images/common/icon08.png) no-repeat right center / 1.2rem auto;
+}
+.menuBox .linkBox .linkList > li > a.on {
+	background-image: url(../../images/common/icon08_on.png);
+}
+.menuBox .linkBox .linkList .img {
+	width: 4.4rem;
+}
+.menuBox .linkBox .linkList .txt {
+	width: calc(100% - 5.6rem);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+.menuBox .linkBox .linkList .subList {
+	margin: 2rem 0 2.4rem 5.6rem;
+	display: none;
+}
+.menuBox .linkBox .linkList > li:first-of-type .subList {
+	display: block;
+}
+.menuBox .linkBox .linkList .subList li:not(:last-of-type) {
+	margin-bottom: 2.8rem;
+}
+.menuBox .linkBox .linkList .subList a {
+	display: inline-block;
+	font-size: 1.4rem;
+	letter-spacing: -0.01em;
+	vertical-align: top;
+}
+@media all and (max-width: 1038px) {
+	.menuBox .linkBox .linkList .img .img02 {
+		display: none !important;
+	}
+
+	#gHeader .searchBox .resultsBox {
+		padding: 8.5rem 1.5rem;
+		top: 0;
+		left: 0;
+		width: 100%;
+		max-height: calc(100vh - 10.2rem);
+		height: 100vh;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	#gHeader .searchBox .resultsBox .subInner {
+		overflow-y: auto;
+		max-height: calc(100vh - 27rem);
+	}
+	#gHeader .searchBox .resultsUl {
+		margin-bottom: 1.6rem;
+	}
+	#gHeader .searchBox .resultsUl li {
+		margin-bottom: 1rem;
+	}
+	#gHeader .searchBox a {
+		font-size: 1.6rem;
+		font-weight: 500;
+		color: #0796FF;
+	}
+	#gHeader .searchBox .resultsDl dt {
+		margin-bottom: 1rem;
+		font-size: 1.4rem;
+		font-weight: 500;
+	}
+	#gHeader .searchBox .resultsDl dd li {
+		margin-bottom: 0.9rem;
+	}
+	#gHeader  .close {
+		position: absolute;
+		bottom: 2rem;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 5.2rem;
+		height: 5.2rem;
+	}
+}
+@media all and (min-width: 1040px) {
+	#gHeader .tBox {
+		background: url(../../images/common/h_bg01_pc.png) no-repeat center top calc(50% + 0.2rem) / 27.8rem auto,linear-gradient(#ddd 0%, #cecfce 100%);
+	}
+	#gHeader .innerBox {
+		margin-top: -4.3rem;
+	}
+	#gHeader .innerBox .topBox {
+		margin: 0 auto 1.3rem;
+		max-width: 122rem;
+		padding: 0 2rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	#gHeader .innerBox .topBox .searchBox {
+		padding: 0;
+		width: 27.2rem;
+		position: relative;
+		left: 0;
+		top: 0;
+		display: block;
+	}
+	#gHeader .innerBox .topBox .searchBox input {
+		padding: 0.5rem 3rem;
+		height: 3.2rem;
+		font-size: 1.4rem;
+		border-radius: 0.6rem;
+		transition: .3s;
+		background-position: left 0.8rem top calc(50% + 0.1rem);
+	}
+	#gHeader .innerBox .topBox .searchBox input:hover {
+		border-color: #0796ff;
+	}
+	#gHeader .innerBox .topBox .searchBox .button:hover {
+		border-color: transparent;
+	}
+	#gHeader .innerBox .topBox .searchBox .button {
+		padding: 0;
+		width: 3rem;
+		height: 3.2rem;
+		top: 0;
+		left: 0;
+		background-position: left calc(50% + 0.2rem) top calc(50% + 0.1rem);
+		cursor: pointer;
+	}
+	#gHeader .innerBox .topBox .logList {
+		margin: 0.2rem -0.2rem 0 3rem;
+		display: flex;
+	}
+	#gHeader .innerBox .topBox .logList li:not(:last-of-type) {
+		margin-right: 4.8rem;
+	}
+	#gHeader .innerBox .topBox .logList a {
+		padding-left: 2.3rem;
+		display: block;
+		font-size: 1.4rem;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		background: url(../../images/common/icon04_size01.png) no-repeat left center / 1.6rem auto;
+	}
+	#gHeader .innerBox .topBox .logList.logList01 a {
+		background-image: url(../../images/common/icon09.png);
+		background-size: 1.8rem auto;
+		background-position: left top calc(50% - 0.1rem);
+	}
+	#gHeader .innerBox .topBox .logList.logList02 a {
+		background-image: url(../../images/common/icon11.png);
+	}
+	#gHeader .innerBox .topBox .logList.logList01 a:hover {
+		background-image: url(../../images/common/icon09_over.png);
+	}
+	#gHeader .innerBox .topBox .logList.logList02 a:hover {
+		background-image: url(../../images/common/icon11_over.png);
+	}
+	#gHeader .innerBox .topBox .logList a:hover {
+		color: #0796ff;
+		background-image: url(../../images/common/icon04_over.png);
+	}
+	#gHeader .innerBox .topBox .logList .list01 a {
+		background-image: url(../../images/common/icon05.png);
+		background-size: 1.6rem auto;
+		background-position: left top calc(50% + 0.1rem);
+	}
+	#gHeader .innerBox .topBox .logList .list01 a:hover {
+		background-image: url(../../images/common/icon05_over.png);
+	}
+	#gHeader .innerBox .topBox .logList.logList01 .list01 a {
+		padding-left: 2.5rem;
+		background-image: url(../../images/common/icon10.png);
+		background-size: 1.8rem auto;
+		background-position: left top calc(50% - 0.1rem);
+	}
+	#gHeader .innerBox .topBox .logList.logList02 .list01 a {
+		background-image: url(../../images/common/icon12.png);
+	}
+	#gHeader .innerBox .topBox .logList.logList01 .list01 a:hover {
+		background-image: url(../../images/common/icon10_over.png);
+	}
+	#gHeader .innerBox .topBox .logList.logList02 .list01 a:hover {
+		background-image: url(../../images/common/icon12_over.png);
+	}
+	#gNavi {
+		border-top: 1px solid #e5e5e5;
+		border-bottom: 1px solid #e5e5e5;
+	}
+	#gNavi .linkUl {
+		margin: 0 auto;
+		width: 81.2rem;
+		display: flex;
+		background: url(../../images/common/h_bg02.png) no-repeat center center / 100% 100%;
+		justify-content: center;
+	}
+	#gNavi .linkUl li {
+		margin: 0 2rem;
+	}
+	#gNavi .linkUl a {
+		padding: 1.3rem 0 1.2rem;
+		display: flex;
+		align-items: center;
+		font-size: 1.4rem;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+	}
+	#gNavi .linkUl li:first-of-type .img {
+		width: 1.6rem;
+	}
+	#gNavi .linkUl .img {
+		margin-right: 0.8rem;
+		position: relative;
+		width: 1.8rem;
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+	#gNavi .linkUl .img .img02 {
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		opacity: 0;
+		transition: .3s;
+	}
+	#gNavi .linkUl a:hover {
+		color: #0796ff;
+	}
+	#gNavi .linkUl a:hover .img .img01 {
+		opacity: 0;
+		transition: .3s;
+	}
+	#gNavi .linkUl a:hover .img .img02 {
+		opacity: 1;
+	}
+	.cover {
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 70;
+		background-color: rgba(72, 72, 72, 0.5);
+		display: none;
+	}
+	.menuBox {
+		width: 43.5rem;
+		left: auto;
+		right: 0;
+		z-index: 99;
+	}
+	.menuBox .close {
+		transition: .3s;
+	}
+	.menuBox .close:hover {
+		opacity: 0.7;
+	}
+	.menuBox .innerBox {
+		display: none;
+	}
+	.menuBox .linkBox {
+		display: block;
+	}
+	.menuBox .linkBox .title {
+		margin-bottom: 2.4rem;
+	}
+	.menuBox .linkBox .title a {
+		background-image: none;
+		cursor: default;
+		pointer-events: none;
+	}
+	.menuBox .linkBox .linkList {
+		padding: 0 3.2rem 0 2.8rem;
+	}
+	.menuBox .linkBox .linkList > li > a {
+		padding-left: 1.6rem;
+		background-position: right 1.6rem center;
+	}
+	.menuBox .linkBox .linkList .img {
+		position: relative;
+	}
+	.menuBox .linkBox .linkList .img .img02 {
+		position: absolute;
+		left: 0;
+		top: 0;
+		transition: .3s;
+		opacity: 0;
+	}
+	.menuBox .linkBox .linkList a:hover {
+		color: #0796ff;
+		background-image: url(../../images/common/icon08_over.png);
+	}
+	.menuBox .linkBox .linkList a:hover .img02 {
+		opacity: 1;
+	}
+	.menuBox .linkBox .linkList a:hover .img01 {
+		opacity: 0;
+		transition: .3s;
+	}
+	.menuBox .linkBox .linkList a.on:hover {
+		background-image: url(../../images/common/icon08_on_over.png);
+	}
+	.menuBox .linkBox .linkList .subList {
+		margin: 0.8rem 0 0;
+	}
+	.menuBox .linkBox .linkList .subList li:not(:last-of-type) {
+		margin-bottom: 0.8rem;
+	}
+	.menuBox .linkBox .linkList .subList a {
+		padding: 1.2rem 1rem 1.1rem 7.2rem;
+		display: block;
+	}
+	.menuBox .linkBox .linkList .subList a:hover {
+		color: #0796ff;
+		background: rgba(0, 0, 0, 0.05);
+	}
+}
+@media all and (max-width: 1039px) and (min-width: 520px) {
+	#gHeader .searchBox {
+		top: calc(100% - 1rem);
+	}
+}
+@media all and (min-width: 520px) {
+	#gHeader .searchBox a:hover {
+		color: #0171E2;
+	}
+}
+/*------------------------------------------------------------
+	フッター
+------------------------------------------------------------*/
+#gFooter {
+	padding-top: 2.6rem;
+}
+#gFooter .pageTop {
+	margin-bottom: 2rem;
+	text-align: center;
+}
+#gFooter .pageTop a {
+	padding-top: 2.4rem;
+	display: inline-block;
+	color: rgba(0, 0, 0, 0.3);
+	font-size: 1.3rem;
+	letter-spacing: 0.02em;
+	vertical-align: top;
+	background: url(../../images/common/icon01.png) no-repeat center top / 4.1rem auto;
+}
+#gFooter .fBgBox {
+	padding: 4.8rem 0 4.1rem;
+	background-color: #dcdcdc;
+}
+#gFooter .inner {
+	margin: 0 auto;
+	padding: 0 2.4rem;
+	max-width: 122rem;
+	position: relative;
+	z-index: 3;
+}
+#gFooter .logo {
+	margin-bottom: 3.1rem;
+	max-width: 27.7rem;
+}
+#gFooter .logo a {
+	display: block;
+}
+#gFooter .copyright {
+	margin-bottom: 0.7rem;
+	color: rgba(0, 0, 0, 0.3);
+	font-size: 1.3rem;
+	font-weight: 400;
+	letter-spacing: -0.01em;
+}
+#gFooter .btmText {
+	color: rgba(0, 0, 0, 0.3);
+	font-size: 1.2rem;
+	line-height: 1.34;
+	letter-spacing: -0.01em;
+}
+#gFooter .fBgBox.bgBox01 {
+	padding: 5.5rem 0 4.1rem;
+	position: relative;
+}
+#gFooter .fBgBox.bgBox01::before {
+	width: 28rem;
+	height: 34rem;
+	position: absolute;
+	right: 0;
+	top: 4.7rem;
+	background: url(../../images/common/f_bg01.png) no-repeat center top / 100% auto;
+	content: '';
+	mix-blend-mode: luminosity;
+}
+#gFooter .linkBox {
+	margin-bottom: 5.5rem;
+}
+#gFooter .fNavi {
+	margin-bottom: 4rem;
+}
+#gFooter .fNavi li:not(:last-of-type) {
+	margin-bottom: 1.6rem;
+}
+#gFooter .fNavi a {
+	display: inline-block;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	vertical-align: top;
+}
+#gFooter .fLinkList {
+	margin-bottom: 3.7rem;
+}
+#gFooter .fLinkList li:not(:last-of-type) {
+	margin-bottom: 1.6rem;
+}
+#gFooter .fLinkList a {
+	display: inline-block;
+	letter-spacing: -0.01em;
+	vertical-align: top;
+}
+#gFooter .fLinkUl li:not(:last-child) {
+	margin-bottom: 1.6rem;
+}
+#gFooter .fLinkUl a {
+	padding-right: 1.8rem;
+	display: inline-block;
+	font-size: 1.4rem;
+	letter-spacing: -0.01em;
+	background: url(../../images/common/icon02.png) no-repeat right top 0.5rem / 1rem auto;
+}
+@media all and (min-width: 1040px) {
+	#gFooter .logo {
+		max-width: 27.2rem;
+	}
+	#gFooter .fBgBox {
+		padding: 4.8rem 0 3.2rem;
+	}
+	#gFooter .pageTop {
+		margin-bottom: 3.8rem;
+	}
+	#gFooter .pageTop a:hover {
+		color: #0089ff;
+		background-image: url(../../images/common/icon01_over.png);
+	}
+	#gFooter .fBgBox.bgBox01 {
+		padding: 4.8rem 0 3.2rem;
+	}
+	#gFooter .fBgBox.bgBox01::before {
+		width: 73.3rem;
+		height: 36rem;
+		right: auto;
+		left: calc(50% - 3rem);
+		top: 0;
+		background-image: url(../../images/common/f_bg01_pc.png);
+	}
+	#gFooter .linkBox {
+		margin-bottom: 5.6rem;
+	}
+	#gFooter .fNavi {
+		margin: -1rem 0 2.3rem;
+		display: flex;
+		flex-wrap: wrap;
+	}
+	#gFooter .fNavi li:not(:last-of-type) {
+		margin-bottom: 0;
+	}
+	#gFooter .fNavi li {
+		margin: 1rem 3.9rem 0 0;
+	}
+	#gFooter .fNavi li:last-of-type {
+		margin-right: 0;
+	}
+	#gFooter .fNavi a {
+		font-size: 1.8rem;
+	}
+	#gFooter .fNavi a:hover {
+		color: #0089ff;
+	}
+	#gFooter .fLinkList {
+		margin: -1rem 0 2.4rem;
+		display: flex;
+		flex-wrap: wrap;
+	}
+	#gFooter .fLinkList li:not(:last-of-type) {
+		margin-bottom: 0;
+	}
+	#gFooter .fLinkList li {
+		margin: 1rem 3.2rem 0 0;
+	}
+	#gFooter .fLinkList li:last-of-type {
+		margin-right: 0;
+	}
+	#gFooter .fLinkList a:hover {
+		color: #0089ff;
+	}
+	#gFooter .fLinkUl {
+		margin-top: -1rem;
+		display: flex;
+		flex-wrap: wrap;
+	}
+	#gFooter .fLinkUl li {
+		margin: 1rem 3.9rem 0 0;
+	}
+	#gFooter .fLinkUl li:not(:last-child) {
+		margin-bottom: 0;
+	}
+	#gFooter .fLinkUl a {
+		font-size: 1.6rem;
+		background-position: right top 0.8rem;
+	}
+	#gFooter .fLinkUl a:hover {
+		color: #0089ff;
+		background-image: url(../../images/common/icon02_over.png);
+	}
+}
+@media (min-width: 1040px) and (max-width: 1430px) {
+	#gFooter .fBgBox.bgBox01::before {
+		left: auto;
+		right: 0;
+	}
+}
