@@ -1,0 +1,283 @@
+@charset "utf-8";
+/*------------------------------------------------------------
+	index
+------------------------------------------------------------*/
+#main .mainBox {
+	margin: 0.6rem 0.1rem 0;
+}
+#main .lBox {
+	width: 36.55%;
+}
+#main .lBox li:not(:last-child) {
+	margin-bottom: 1.6rem;
+}
+#main .lBox a {
+	padding: 0.9rem 8rem 1rem;
+	position: relative;
+	display: block;
+	text-align: center;
+	font-size: 1.4rem;
+	font-weight: 500;
+	color: #0796FF;
+	border: 2px solid #FFB146;
+	border-radius: 10rem;
+}
+#main .lBox a .step {
+	position: absolute;
+	left: 1.9rem;
+	color: #FFB146;
+	top: 50%;
+	transform: translateY(-50%);
+}
+#main .lBox a .txt {
+	padding-right: 1.5rem;
+	display: inline-block;
+	background: url(../../images/common/icon08_over.png) no-repeat
+	center right;
+	background-size: 0.8rem auto;
+	transition: .3s;
+}
+#main .lBox .color01 a {
+	border-color: #FFDA0D;
+}
+#main .lBox .color01 a .step {
+	color: #F5CF00;
+}
+#main .lBox .color02 a {
+	border-color: #98F5A0;
+}
+#main .lBox .color02 a .step {
+	color: #82EF8C;
+}
+#main .lBox .color03 a {
+	border-color: #98F5D5;
+}
+#main .lBox .color03 a .step {
+	color: #77E8C2;
+}
+#main .lBox .color04 a {
+	border-color: #B0F7F4;
+}
+#main .lBox .color04 a .step {
+	color: #89D9D6;
+}
+#main .lBox .color05 a {
+	border-color: #B0D6F7;
+}
+#main .lBox .color05 a .step {
+	color: #B0D6F7;
+}
+#main .rBox {
+	width: 58%;
+	margin-top: 0.1rem;
+}
+#main .rBox .info:not(:last-child) {
+	margin-bottom: 6.7rem;
+}
+#main .rBox h2 {
+	margin-bottom: 2rem;
+	padding: 2.5rem 0 2.4rem;
+	text-align: center;
+	font-size: 2rem;
+	font-weight: 700;
+	color: rgba(0,0,0,0.5);
+	background: url(../../images/common/icon48.png) no-repeat left 1.6rem center,url(../../images/common/icon48.png) no-repeat right 1.5rem center #FFB146;
+	background-size: 2.4rem auto;
+}
+#main .rBox h2.color01 {
+	background-color: #FFE346;
+}
+#main .rBox h2.color02 {
+	background-color: #97F5A0;
+}
+#main .rBox h2.color03 {
+	background-color: #97F5DF;
+}
+#main .rBox h2.color04 {
+	background-color: #B0EFF7;
+}
+#main .rBox h2.color05 {
+	background-color: #B1D6F7;
+}
+#main .rBox h2 .step {
+	margin-right: 0.9rem;
+	font-family: "Lato", sans-serif;
+}
+#main .rBox p {
+	margin-bottom: 3.2rem;
+}
+#main .rBox .img {
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#main .rBox .step01 .img {
+	align-items: flex-end;
+}
+
+#main .rBox .step01 .img .txt_img {
+	aspect-ratio: 346 / 344;
+	height: calc(344px / 2);
+	object-fit: contain;
+	margin-right: 1.8rem;
+	margin-bottom: 1.6rem;
+}
+
+#main .rBox .step01 .img .lottery_img {
+	aspect-ratio: 233 / 228;
+	height: calc(228px / 2);
+}
+
+#main .rBox .step02 .img {
+	align-items: flex-end;
+}
+
+#main .rBox .step02 .img .txt_img {
+	aspect-ratio: 246 / 246;
+	height: calc(246px / 2);
+	object-fit: contain;
+	margin-right: 1.6rem;
+	margin-bottom: 2.4rem;
+}
+
+#main .rBox .step02 .img .lottery_img {
+	aspect-ratio: 220 / 294;
+	height: calc(294px / 2);
+}
+
+#main .rBox .step03 .img {
+	flex-direction: column;
+}
+
+#main .rBox .step03 .img .txt_img {
+	aspect-ratio: 578 / 246;
+	height: calc(246px / 2);
+	object-fit: contain;
+}
+
+#main .rBox .step03 .img .lottery_img {
+	position: relative;
+	aspect-ratio: 192 / 205;
+	height: calc(205px / 2);
+	z-index: 1;
+	margin-top: -3.3rem;
+    left: 0.8rem;
+}
+
+#main .rBox .step04 .img {
+	align-items: flex-end;
+}
+
+#main .rBox .step04 .img .txt_img {
+	aspect-ratio: 246 / 246;
+	height: calc(246px / 2);
+	object-fit: contain;
+	margin-right: 2.6rem;
+	margin-bottom: 4.8rem;
+}
+
+#main .rBox .step04 .img .lottery_img {
+	position: relative;
+	aspect-ratio: 186 / 251;
+	height: calc(251px / 2);
+}
+
+#main .rBox .step05 .img {
+	align-items: flex-end;
+}
+
+#main .rBox .step05 .img .lottery_img {
+	position: relative;
+	aspect-ratio: 496 / 496;
+	height: calc(496px / 2);
+}
+
+#main .rBox .comBtn01 {
+	margin-top: 2.3rem;
+}
+#main .rBox .comBtn01 a {
+	font-size: 1.6rem;
+}
+#main .bgBox {
+	margin-top: 6.4rem;
+	padding: 4.1rem 0;
+	text-align: center;
+	background-color: rgba(0,0,0,0.05);
+}
+#main .bgBox p {
+	margin-bottom: 1.9rem;
+}
+#main .bgBox .comBtn a {
+	padding: 1.7rem 1rem 1.5rem;
+	font-size: 2rem;
+}
+#main .fixBtn {
+	position: fixed;
+	left: 50%;
+	bottom: 3rem;
+	width: 34.3rem;
+	transform: translateX(-50%);
+	transition: 0.3s;
+	z-index: 2;
+}
+#main .fixBtn.on {
+	opacity: 0;
+    z-index: -5;
+}
+@media all and (min-width: 520px) {
+	#main .lBox a:hover .txt {
+		color: #0071e2;
+		background-image: url(../../images/common/icon08_blue_over.png);
+	}
+}
+@media all and (max-width: 519px) {
+	#main {
+		padding-top: 0.4rem;
+		margin-bottom: 8rem;
+	}
+	#main .mainBox {
+		margin: 0.1rem 0.1rem 0;
+		display: block;
+	}
+	#main .lBox {
+		width: auto;
+	}
+	#main .lBox li:not(:last-child) {
+		margin-bottom: 0.4rem;
+	}
+	#main .rBox {
+		width: auto;
+		margin: 4.7rem 0 0;
+	}
+	#main .rBox .info:not(:last-child) {
+		margin-bottom: 3.6rem;
+	}
+	#main .rBox h2 {
+		margin: 0 -1.7rem 2.1rem;
+		padding: 2.6rem 0 2.5rem;
+		font-size: 1.8rem;
+	}
+	#main .rBox p {
+		margin-bottom: 0.8rem;
+	}
+	#main .rBox .img01 {
+		margin-bottom: -3.5rem;
+	}
+	#main .rBox .img img {
+		max-width: 100%;
+	}
+	#main .rBox .comBtn01 {
+		margin-top: 1.5rem;
+	}
+	#main .bgBox {
+		margin: 6.4rem -1.6rem 0;
+	}
+	#main .fixBtn {
+		bottom: 1rem;
+	}
+	#main .rBox .comBtn01.wid01 {
+		margin-top: 6rem;
+	}
+}

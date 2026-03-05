@@ -26,7 +26,7 @@ from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 import config
 from exceptions import AppointmentError, LoginError, AccountNeedsResetError
 from modules.appoint_logic import make_appointment
-from modules.login_logic import login
+from modules.login_logic import login, navigate_to_lottery
 from utils.data_manager import mark_account_status
 from utils.email_fetcher import wait_for_appointment_confirm
 from utils.logger import get_logger
@@ -93,6 +93,8 @@ async def _process_one_account(
         # ──────────────────────────────────────────────────────────────────
 
         await login(page, username, account["password"])
+        # 登录成功后：从 マイページ 经由 抽選履歴→介绍页 导航到抽奖列表页
+        await navigate_to_lottery(page, username, account["password"])
 
         # 登录成功：解决待裁决账号（它们是账号自身问题，非封 IP）
         # success_count 在登录成功后即自增（不等待预约结果）：
@@ -166,7 +168,8 @@ async def _process_one_account(
         # MFA_REQUIRED: 账号开启了邮箱二步验证，属账号层面问题，
         # 与 IP 无关，单独标 status=2，不累计连续失败计数
         if error_text.startswith("MFA_REQUIRED:"):
-            logger.warning("账号 %s | 需 MFA 验证码，当前流程不支持，直接标记 status=2: %s", username, error_text)
+            # 只有 REQUIRE_OTP=False 时才会走到这里（login_logic 检测到 MFA 且不处理时抛出）
+            logger.warning("账号 %s | 需 MFA 验证码但 REQUIRE_OTP=False，跳过，标记 status=2: %s", username, error_text)
             mark_account_status(username, 2, error_text)
             return
         if shared["ip_ban"]:

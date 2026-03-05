@@ -27,6 +27,8 @@ autopokemon/
 ├── main.py                  # 启动入口：Profile 同步、账号分片、N 路 Worker 并发
 ├── config.py                # 全局配置（API Key、代理、并发数等）
 ├── setup_profiles.py        # 一次性批量创建指纹 Profile
+├── risk_overlay.py          # 实时风控监控悬浮窗（CDP + JSONL tail，调试期间使用）
+├── desk_monitor.py          # 批量运行进度悬浮窗（读 accounts.csv + run_*.log）
 ├── logs/                    # 运行日志（自动创建）
 ├── data/                    # 数据文件（自动创建）
 │
@@ -36,12 +38,12 @@ autopokemon/
 │   └── cdp_handler.py       # Playwright connect_over_cdp 连接生命周期
 │
 ├── modules/
-│   ├── login_logic.py       # 登录流程：输入账号 → 2FA → 检测封禁
+│   ├── login_logic.py       # 登录流程 + 登录后导航到抽選応募一覧（navigate_to_lottery）
 │   ├── appoint_logic.py     # 预约流程：找商品 → 单选框 → 同意 → 确认弹窗
 │   └── session_runner.py    # 账号循环 + IP封禁状态机 + 邮件确认后台任务
 │
 └── utils/
-    ├── anti_bot.py          # 人类行为模拟：随机鼠标轨迹、逐字打字、随机延迟
+    ├── anti_bot.py          # 人类行为模拟：贝塞尔鼠标轨迹、正态分布打字、随机延迟
     ├── data_manager.py      # 数据层唯一入口：accounts.csv / browsers.csv 原子读写
     ├── email_fetcher.py     # IMAP IDLE 监听：OTP → CSV + 预约确认广播唤醒模型
     ├── logger.py            # 控制台着色（多 Worker 分色）+ 文件双输出
@@ -165,7 +167,7 @@ flowchart TD
     PRE --> B[取下一个账号]
     B --> CLR[clear_cookies + 导航 about:blank
 清除上一账号残留]
-    CLR --> D[login_logic.do_login]
+    CLR --> D[login_logic.login]
     D -- LoginError --> E{pending_verdict\n已存在?}
     E -- 是，连续两次失败 --> F[两账号均设 status=3\n返回 ip_banned=True]
     E -- 否 --> G{success_count\n>= 封禁阈值?}
@@ -177,7 +179,8 @@ flowchart TD
     J -- 是 --> K[上个待裁决账号\nstatus=2 清空]
     J -- 否 --> L[success_count += 1]
     K --> L
-    L --> M[appoint_logic.do_appoint]
+    L --> NAV[login_logic.navigate_to_lottery\n从 マイページ 经 抽選履歴 导航到 apply.html]
+    NAV --> M[appoint_logic.make_appointment]
     M -- 预约成功 --> N{REQUIRE_APPOINT_EMAIL?}
     N -- 否 --> O[status=1 写入]
     N -- 是 --> P[后台 Task 等待确认邮件]
@@ -194,25 +197,45 @@ flowchart TD
 
 ---
 
-### 登录流程（login_logic.py）
+### 登录 + 导航流程（login_logic.py）
 
 ```mermaid
 flowchart TD
-    A([do_login]) --> B[Step 1\n打开登录页]
-    B --> C[Step 2\n输入邮箱]
-    C --> D[Step 3\n输入密码]
-    D --> E[Step 4\n点击登录按钮]
-    E --> F[Step 5\n等待页面跳转或错误框]
-    F --> G{检测 .comErrorBox?}
-    G -- 有错误文字 --> H([抛出 LoginError\n错误原文])
-    G -- 无错误 --> I{REQUIRE_OTP?}
-    I -- 否 --> J[Step 7\n等待登录完成]
-    I -- 是 --> K[Step 6\nwait_for_new_email_since\n等待 OTP 邮件\n最长 EMAIL_OTP_TIMEOUT]
+    A([login]) --> B[Step 3b\ngoto 主页\n等待 Gigya SDK 就绪]
+    B --> C[random_mouse_wander\npage_idle_behavior\n让 Gigya 采集行为基线]
+    C --> D[点击主页「ログイン / 会員登録」按钮\n自然跳转到登录页]
+    D --> E[Step 4\n等 Gigya 就绪 + 空闲行为\nhuman_type 邮箱 + 密码]
+    E --> F[click 登录按钮\nwait_for_load_state networkidle]
+    F --> G{检测错误框 / URL}
+    G -- .comErrorBox 有文字 --> H([抛出 LoginError 或 AccountNeedsResetError])
+    G -- 仍在 /login/ --> H
+    G -- 跳转到 login-mfa --> I{REQUIRE_OTP?}
+    I -- 否 --> J([抛出 LoginError: MFA_REQUIRED])
+    I -- 是 --> K[Step 6\nwait_for_new_email_since\n等 OTP 邮件]
     K --> L{OTP 到达?}
     L -- 超时 --> M([抛出 LoginError: OTP 超时])
-    L -- 成功 --> N[输入 OTP]
-    N --> J
-    J --> O([返回 success])
+    L -- 成功 --> N[Step 7\n输入 OTP → 点击认证]
+    N --> O{Step 8\n利用规约再同意页?}
+    O -- 是 --> P[勾两个复选框 → 次へ進む]
+    O -- 否 --> Q([login 正常返回\n当前页面 = マイページ])
+    P --> Q
+```
+
+```mermaid
+flowchart TD
+    A([navigate_to_lottery]) --> B[Step 9b-0\n确认在 マイページ\n若不在则 goto MYPAGE_URL]
+    B --> C[Step 9b-1\nclick 「抽選履歴」标签]
+    C --> D[Step 9b-2\nclick 「抽選履歴一覧を見る」\nwait domcontentloaded]
+    D --> E[random_mouse_wander\npage_idle_behavior]
+    E --> F[Step 9b-3\nclick img alt=「開催中の抽選一覧」\nwait domcontentloaded]
+    F --> G[Step 9b-4\nrandom_scroll x3\nclick a.goLotteryBtn\nwait domcontentloaded]
+    G --> H{URL 含 /login/?}
+    H -- 否 --> I([navigate_to_lottery 返回\n当前页面 = lottery/apply.html])
+    H -- 是（二次登录） --> J[Step 9b-5\nhuman_type 账密 → 点击登录]
+    J --> K{MFA 触发?}
+    K -- 是 --> L[等 OTP → 输入 → 认证]
+    K -- 否 --> I
+    L --> I
 ```
 
 ---
@@ -330,30 +353,31 @@ playwright install chromium
 
 ```python
 # Nstbrowser API
-API_KEY = "your_api_key"
-API_BASE = "http://localhost:28765"
+NST_HOST    = "localhost:8848"
+NST_API_KEY = "your_api_key"
 
 # 并发 Worker 数（= 同时使用的指纹浏览器数量）
 CONCURRENT_BROWSERS = 2
 
-# 是否需要 OTP 邮箱验证
+# 是否需要 OTP 邮箱验证（生产环境必须 True）
 REQUIRE_OTP = True
 
-# 是否等待预约确认邮件
+# 是否等待预约确认邮件才标 status=1
 REQUIRE_APPOINT_EMAIL = False
 
-# 邮件通知配置
-SMTP_HOST = "smtp.example.com"
-SMTP_PORT = 465
-NOTIFY_EMAIL = "your@email.com"
-NOTIFY_PASSWORD = "your_password"
+# OTP 统一收件邮箱（IMAP 授权码）
+OTP_EMAIL_ADDR      = "your_otp@example.com"
+OTP_EMAIL_AUTH_CODE = "your_imap_auth_code"
+
+# 邮件通知配置（复用 OTP 邮箱发件）
+NOTIFY_TO_EMAIL = "your_notify@example.com"
 
 # IP 封禁判定阈值（连续成功 N 次后才裁定失败为账号自身问题）
-BAN_THRESHOLD = 2
+IP_BAN_CONFIRM_THRESHOLD = 2
 
 # 预约重试次数和冷却时间（秒）
-APPOINT_MAX_RETRY = 3
-APPOINT_RETRY_COOLDOWN = 60
+APPOINT_RETRY_TIMES = 2
+APPOINT_RETRY_WAIT  = 60
 ```
 
 ### 3. 创建指纹浏览器 Profile（首次）
@@ -377,7 +401,14 @@ user2@example.com,pass2,0,
 ### 5. 运行
 
 ```bash
+# 主程序（批量预约）
 python main.py
+
+# 可选：同时开启实时风控监控悬浮窗（调试 / 采集基线时使用）
+python risk_overlay.py --log logs/risk_log.jsonl --change baseline
+
+# 可选：同时开启批量进度悬浮窗
+python desk_monitor.py
 ```
 
 ---

@@ -1,13 +1,22 @@
 """
 risk_overlay.py —— 实时风控状态悬浮窗
 
-原理：通过 CDP（Chrome 调试协议）被动订阅 Network 事件，
-      接收浏览器里已有请求的响应拷贝，不产生任何额外网络请求。
-      风控 JS 运行在浏览器渲染进程，对此工具的存在完全无感知。
+数据来源（双重机制）：
+  ① CDP WebSocket（主动）：直接连接浏览器调试端口，被动订阅 Network.responseReceived /
+    loadingFinished 事件，不产生任何额外网络请求，风控 JS 对此无感知。
+    覆盖范围：Gigya / Treasure Data / Salesforce CC / Facebook Pixel / GTM 等所有
+    WATCH 域名的请求，并实时展示 HTTP 状态、Cookie 状态。
+
+  ② JSONL tail（辅助）：每 800ms 读取一次 logs/risk_log.jsonl，获取由 main.py
+    Playwright 拦截器（_write_risk_log）写入的 Gigya 登录事件精确解析数据——
+    包含 errorCode / riskScore / botSuspected / riskAllow 字段（部分字段 CDP
+    读原始 body 解析结果相同，但 JSONL 来源更可靠）。
+    仅处理 source=="playwright" 的条目，不重复处理 CDP 自身写入的基线记录。
 
 使用：
-    python risk_overlay.py              # 自动连接 Nstbrowser 第一个运行页面
-    python risk_overlay.py --port 23511 # 指定 CDP 端口
+    python risk_overlay.py                              # 自动连接 Nstbrowser 第一个运行页面
+    python risk_overlay.py --port 23511                 # 指定 CDP 端口
+    python risk_overlay.py --log logs/risk_log.jsonl   # 开启 JSONL tail + 基线写入
 """
 
 from __future__ import annotations
@@ -42,6 +51,7 @@ import config
 # ── 日志文件路径（由 --log 参数设置）─────────────────────────────────────────
 _log_path:   str | None = None   # e.g. logs/risk_log.jsonl
 _log_change: str        = "baseline"  # 当前改造标签
+_current_port: int      = 23511   # 动态跟踪：每次重连时从 Nstbrowser API 更新
 
 # ── 监听域名 ──────────────────────────────────────────────────────────────────
 WATCH = (
@@ -214,11 +224,72 @@ class RiskState:
         self.risk_score: str = "—"
         self.ids_403_count: int = 0
         self.updated_at    = 0.0
+        # ── JSONL tail 游标（main.py Playwright 写入，overlay 实时读取）────────
+        self._jsonl_path: str | None = None
+        self._jsonl_pos: int = 0     # 上次读到的文件字节位置
 
     def push(self, label: str, color: str, text: str):
         ts = datetime.now().strftime("%H:%M:%S")
         self.events.append((ts, label, color, text))
         self.updated_at = time.time()
+
+    def poll_jsonl(self):
+        """读取 risk_log.jsonl 中自上次以来的新行，更新 KPI + 事件流。"""
+        path = self._jsonl_path
+        if not path or not os.path.exists(path):
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                f.seek(self._jsonl_pos)
+                lines = f.readlines()
+                self._jsonl_pos = f.tell()
+        except Exception:
+            return
+        for raw in lines:
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                d = json.loads(raw)
+            except Exception:
+                continue
+            # 只处理来自 Playwright 拦截的登录事件
+            if d.get("source") != "playwright":
+                continue
+            err    = d.get("errorCode", "?")
+            score  = d.get("riskScore")
+            allow  = d.get("riskAllow")
+            bot    = d.get("botSuspected")
+            uid    = d.get("uid", "")
+            ts_raw = d.get("ts", "")[-8:]  # HH:MM:SS
+            url_short = (d.get("url") or "").rsplit("/", 1)[-1][:30]
+
+            # 更新 KPI
+            if isinstance(err, int):
+                self.last_login_err = err
+            if bot is not None:
+                self.bot_suspected = bot
+            if score is not None:
+                self.risk_score = str(score)
+
+            # 构造事件流文字
+            err_color, err_meaning = GIGYA_ERRORS.get(err, (C_YELLOW, "未知码")) \
+                if isinstance(err, int) else (C_YELLOW, str(err))
+            parts = [f"errorCode={err} {err_meaning}"]
+            if score is not None:
+                sc_color = C_GREEN if isinstance(score,(int,float)) and score>=60 \
+                    else (C_YELLOW if isinstance(score,(int,float)) and score>=40 else C_RED)
+                parts.append(f"score={score}")
+            if bot is not None:
+                parts.append(f"bot={'🚨True' if bot else '✔False'}")
+            if allow is not None:
+                parts.append(f"allow={allow}")
+            if uid:
+                parts.append(f"UID={uid[:12]}…")
+            text = "  ".join(parts)
+            label = f"Gigya·{url_short}"
+            self.push(label, err_color if isinstance(err,int) else C_YELLOW, text)
+            self.updated_at = time.time()
 
 
 _state = RiskState()
@@ -349,6 +420,11 @@ async def _cdp_session(ws_url: str):
                             body = ""
                         await _process_body(body, url, label, color, status)
 
+                # ── 请求被取消/失败（页面导航中断响应体读取）────────────────────
+                elif method == "Network.loadingFailed":
+                    req_id = msg["params"]["requestId"]
+                    pending.pop(req_id, None)  # 清理，不报错
+
                 # ── 页面导航 ──────────────────────────────────────────────────
                 elif method in ("Page.frameNavigated",
                                 "Page.navigatedWithinDocument"):
@@ -443,7 +519,7 @@ async def _process_body(body: str, url: str, label: str, color: str, status: int
         _state.push("⚠️ 429", C_ORANGE, "请求频率过高（rate limit）")
 
     # ── 写入基线日志 ──────────────────────────────────────────────────────────
-    if "login" in url.lower() or "accounts" in url.lower():
+    if "login" in url.lower() or "accounts" in url.lower() or "id.pokemoncenter" in url.lower():
         ra = p.get("riskAssessment")
         _append_log({
             "ts":           datetime.now().isoformat(timespec="seconds"),
@@ -456,6 +532,7 @@ async def _process_body(body: str, url: str, label: str, color: str, status: int
             "riskAllow":    ra.get("allow") if isinstance(ra, dict) else None,
             "httpStatus":   status,
             "label":        label,
+            "rawKeys":      list(p.keys())[:20] if p else [],  # 记录响应 JSON 的字段名，帮助诊断格式
         })
 
 
@@ -486,12 +563,20 @@ def _get_ws_url(port: int) -> str | None:
 
 
 async def _cdp_loop(port: int):
-    """持续监控，断线自动重连。"""
+    """持续监控，断线自动重连。端口动态跟随 main.py 启动的浏览器。"""
+    global _current_port
+    _current_port = port
     while True:
         _state.connected = False
-        ws_url = _get_ws_url(port)
+        ws_url = _get_ws_url(_current_port)
         if not ws_url:
-            _state.push("CDP", C_YELLOW, f"port {port} 未找到可用页面，5s 后重试…")
+            # 当前端口无响应，从 Nstbrowser API 重新发现正在运行的浏览器端口
+            discovered = _get_port(None)
+            if discovered != _current_port:
+                _current_port = discovered
+                ws_url = _get_ws_url(_current_port)
+        if not ws_url:
+            _state.push("CDP", C_YELLOW, f"port {_current_port} 未找到可用页面，5s 后重试…")
             await asyncio.sleep(5)
             continue
         _state.push("CDP", C_GREEN, f"已连接 ← {ws_url[:60]}")
@@ -688,6 +773,9 @@ class RiskOverlay(tk.Tk):
         self.after(800, self._refresh)
 
     def _do_refresh(self):
+        # ── 先 tail JSONL，把 main.py 捕获的 Gigya 数据同步进来 ────────────────
+        _state.poll_jsonl()
+
         s = _state
 
         # 连接状态
@@ -805,7 +893,7 @@ async def _cookie_poller(port: int):
     """每 5s 通过 CDP 读一次全量 Cookie，提取风控相关键写入 _state。"""
     while True:
         await asyncio.sleep(5)
-        ws_url = _get_ws_url(port)
+        ws_url = _get_ws_url(_current_port)  # 使用动态端口，跟随 _cdp_loop 更新
         if not ws_url:
             continue
         try:
@@ -843,20 +931,22 @@ async def _main_async(port: int):
 def _get_port(cli_port: int | None) -> int:
     if cli_port:
         return cli_port
-    # 从 Nstbrowser API 获取第一个运行中浏览器的端口
+    # 从 Nstbrowser API 获取第一个运行中浏览器的端口（与 browser_factory.py 保持一致）
     try:
         resp = _requests.get(
-            f"http://{config.NST_HOST}/api/v2/browsers/running",
+            f"http://{config.NST_HOST}/api/v2/browsers",
             headers={"x-api-key": config.NST_API_KEY},
             timeout=4,
         )
         data = resp.json()
-        browsers = data.get("data", {}).get("list") or data.get("data") or []
-        if isinstance(browsers, list) and browsers:
-            b = browsers[0]
-            p = b.get("port") or b.get("debugPort")
-            if p:
-                return int(p)
+        browsers = data.get("data") or []
+        if isinstance(browsers, list):
+            for b in browsers:
+                if not b.get("running"):
+                    continue
+                p = b.get("remoteDebuggingPort")
+                if p:
+                    return int(p)
     except Exception:
         pass
     return 23511
@@ -882,6 +972,10 @@ def main():
     if args.log:
         _log_path   = args.log
         _log_change = args.change
+        _state._jsonl_path = args.log   # overlay 同时 tail 同一个文件
+        # 启动时跳到文件末尾，只看新增的条目
+        if os.path.exists(args.log):
+            _state._jsonl_pos = os.path.getsize(args.log)
         print(f"[RiskOverlay] 日志 -> {_log_path}  change={_log_change}")
 
     # asyncio 在后台线程

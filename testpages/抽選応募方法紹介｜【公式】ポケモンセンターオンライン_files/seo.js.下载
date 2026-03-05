@@ -1,0 +1,9 @@
+function seo() {
+    const currentUrl = window.location.href;
+    const currentImageUrl = `${window.location.origin}/static/images/SC_O04_08/OGP_banner_B.jpg`;
+    const metaTags = `<meta property="og:url" content="${currentUrl}">
+<meta property="og:image" content="${currentImageUrl}">`;
+    document.head.insertAdjacentHTML('beforeend', metaTags);
+}
+
+seo();

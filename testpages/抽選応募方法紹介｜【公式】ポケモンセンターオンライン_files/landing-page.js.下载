@@ -1,0 +1,69 @@
+$(async function () {
+
+    const gigyaLoad = new Promise((resolve, reject) => {
+        $('#gigya-js').attr('src', `${url["gigya.url"]}`);
+        $('#gigya-js').on('load', function () {
+            resolve()
+        }).on("error", function (e) {
+            reject(e)
+        });
+    })
+
+    try {
+        await Promise.all([gigyaLoad]);
+    } catch (e) {
+    }
+
+    // windowのスコロールイベント
+    $(window).scroll(function () {
+        if ($(window).scrollTop() > $('.bgBox .comBtn').offset().top - $(window).innerHeight()) {
+            $('#main .fixBtn').addClass('on');
+        } else {
+            $('#main .fixBtn').removeClass('on');
+        }
+    }).trigger('scroll');
+
+    // 新規会員登録へ進む、ECサイトのログイン画面へ遷移する
+    $("#step1Btn").on("click", function (event) {
+        event.preventDefault();
+        location.href = `${url["ec.site.login.url"]}`
+    })
+
+    // マイページから電話番号認証へ進む、ECサイトのマイページ画面へ遷移する
+    // マイページから抽選申込み履歴を確認する、ECサイトのマイページ画面へ遷移する
+    // マイページを見る、ECサイトのマイページ画面へ遷移する
+    $("#step2Btn,#step4Btn,#step5Btn").on("click", function (event) {
+        event.preventDefault();
+        location.href = `${url["ec.site.my.page.url"]}`
+    })
+
+    // 抽選へ進む、・ログイン済み時：　「SC_O04_11_利用規約再同意」か「SC_O04_10_抽選応募」画面へ遷移する、・未ログイン時：「SC_O04_09_抽選ログイン」画面へ遷移する
+    $("#step3Btn,.goLotteryBtn").on("click", function (event) {
+        event.preventDefault();
+
+        const callbackGetAccountInfo = (response) => {
+            // シグネチャ取得処理のエラーチェック
+            if (response.errorCode !== 0) {
+                //未ログイン時
+                location.href = routers.SC_O04_09
+            } else {
+                //ログイン済み時
+                const termsOfUse = response.preferences?.terms?.pokemonCenterOnline?.isConsentGranted;
+                sessionStorage.setItem("termsOfUse", termsOfUse)
+                const personalPolicy = response.preferences?.privacy?.pokemon?.isConsentGranted;
+                sessionStorage.setItem("personalPolicy", personalPolicy)
+                if (!!termsOfUse && !!personalPolicy) {
+                    location.href = routers.SC_O04_10;
+                } else {
+                    location.href = routers.SC_O04_11;
+                }
+            }
+        };
+        // シグネチャ取得処理で使用するSAP CDC APIメソッドを実行
+        gigya.accounts.getAccountInfo({
+            callback: callbackGetAccountInfo, // コールバック関数
+            include: 'preferences'
+        });
+    })
+
+})
