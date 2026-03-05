@@ -150,17 +150,28 @@ async def login(page: Page, username: str, password: str) -> None:
         await random_mouse_wander(page, moves=random.randint(3, 5))
         await page_idle_behavior(page)
 
+        # 空闲浏览后滚回顶部：Pokemon Center 网站在向下滚动时通过 CSS transform
+        # 将 header slide-up 到视口外。transform 隐藏不影响 Playwright visible 判断，
+        # 但 bounding_box().y 会是负值 → human_click 坐标打到视口外 → 毫无反应。
+        # 用瞬间滚动（不加 smooth）确保 header 立刻弹回。
+        await page.evaluate("window.scrollTo(0, 0)")
+        await asyncio.sleep(1.5)  # 等 header slide-down 动画完成（通常 300ms，留足余量）
+
         # 从主页点击「ログイン ／ 会員登録」按钮（建立自然导航路径）
+        # 用 :visible 自动适配 PC（ul.logList 文字链接）和 SP（ul.linkList 图标链接）两种布局
         logger.info("Step 3b | 点击主页「ログイン ／ 会員登録」按钮...")
-        _login_nav = page.locator('a[href$="/login/"]').first
+        _login_nav = page.locator('a[href*="/login/"]:visible').first
         await _login_nav.wait_for(state="visible", timeout=config.ELEMENT_WAIT_TIMEOUT_MS)
-        await _login_nav.evaluate("el => el.scrollIntoView({block: 'center', behavior: 'smooth'})")
+
+        await _login_nav.evaluate("el => el.scrollIntoView({block: 'center', behavior: 'instant'})")
         await random_action_delay(0.5, 1.0)
-        await human_click(page, _login_nav)
-        try:
-            await page.wait_for_load_state("domcontentloaded", timeout=config.PAGE_LOAD_TIMEOUT_MS)
-        except Exception:
-            pass
+        # expect_navigation 必须包住点击：确保等到点击触发的导航完成后再继续
+        # 不能用 wait_for_load_state（页面已加载时会立即返回，导航尚未开始）
+        async with page.expect_navigation(
+            wait_until="domcontentloaded",
+            timeout=config.PAGE_LOAD_TIMEOUT_MS,
+        ):
+            await human_click(page, _login_nav)
         logger.info("Step 3b | ✓ 已跳转到登录页: %s", page.url)
 
     # ── Step 4: 填写账密 ──────────────────────────────────────────────────────
@@ -218,15 +229,38 @@ async def login(page: Page, username: str, password: str) -> None:
 
     # ── Step 4b: 登录按钮 / 调试分支 ─────────────────────────────────────────
     if config.DO_CLICK_LOGIN:
-        login_btn = page.locator('#form1Button, button[type="submit"], a.loginBtn').first
-        await login_btn.wait_for(state="visible", timeout=config.ELEMENT_WAIT_TIMEOUT_MS)
+        login_btn = page.locator('#form1Button, button[type="submit"], input[type="submit"], a.loginBtn').first
+        try:
+            await login_btn.wait_for(state="visible", timeout=config.ELEMENT_WAIT_TIMEOUT_MS)
+        except Exception:
+            # 诊断：打出页面所有 button/submit/loginBtn 候选元素的当前 CSS 状态
+            _diag = await page.evaluate("""() => Array.from(
+                document.querySelectorAll('button, input[type=submit], a[class*=login], a[class*=btn]')
+            ).map(e => {
+                const s = getComputedStyle(e);
+                return {tag: e.tagName, id: e.id,
+                        cls: e.className.substring(0, 40),
+                        txt: e.textContent.trim().substring(0, 20),
+                        display: s.display, visibility: s.visibility, opacity: s.opacity,
+                        w: e.offsetWidth, h: e.offsetHeight};
+            })""")
+            logger.warning("Step 4b | 登录按钮15s未出现，页面按钮列表: %s | URL: %s",
+                           str(_diag[:10]), page.url)
+            raise
         # 注意：不使用 expect_navigation() context manager——
         # 若导航在 context 进入后极短时间内完成（登录失败时服务器常做 POST→302→登录页 双重跳转），
         # Playwright 会错过事件导致整个 context manager 挂起直到超时。
         # 改用 wait_for_load_state("networkidle")：等待网络请求静默（JS 渲染完成），
         # 确保登录失败时的错误框文字已经挂载到 DOM。
         await human_click(page, login_btn)
-        await page.wait_for_load_state("networkidle", timeout=config.PAGE_LOAD_TIMEOUT_MS)
+        # wait_for_load_state("networkidle") 在有大量 Analytics/GTM 追踪请求的页面
+        # 永远不会触发（60s 超时）。改为等 "load" + 短暂固定等待，确保 Gigya
+        # 回包后 DOM 错误框已渲染。Gigya 响应早于 page load，DOM 注入通常在 1~2s 内完成。
+        try:
+            await page.wait_for_load_state("load", timeout=30000)
+        except Exception:
+            pass  # load 超时也继续，Gigya 响应通过 response 拦截器已捕获
+        await asyncio.sleep(2)  # 等 Gigya 注入错误框 / 完成页面跳转
         logger.info("Step 4 | 页面跳转完成，检查登录结果...")
 
     elif config.SIMULATE_LOGIN_ERROR_PAGE:
