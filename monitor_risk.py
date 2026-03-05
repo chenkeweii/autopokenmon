@@ -69,6 +69,8 @@ GIGYA_ERROR_CODES = {
     401003:  (_RED,    "登录失败（通用）"),
     401022:  (_YELLOW, "⚠️  账号待重置密码（非风控）"),
     403010:  (_RED,    "reCAPTCHA 验证失败"),
+    403101:  (_YELLOW, "📧 账号开启了 MFA，需要邮箱验证码（TFA Pending）"),
+    403200:  (_RED,    "不允许登录该应用（apiKey 属于另一个应用）"),
     403100:  (_RED,    "账号被封禁"),
     403102:  (_RED,    "⚠️  设备/IP 被风控拦截（评分过低）"),
     403047:  (_RED,    "账号临时锁定"),
@@ -208,8 +210,9 @@ class RiskMonitor:
         if tfa_flag is not None:
             print(f"      isTFASuspected  = {str(tfa_flag)}")
 
-        # 登录相关额外字段
-        if "login" in e["url"].lower() or "accounts.login" in e["url"]:
+        # 登录 / TFA 相关额外字段
+        if ("login" in e["url"].lower() or "accounts.login" in e["url"]
+                or "tfa" in e["url"].lower()):
             uid = p.get("UID") or p.get("uid")
             if uid:
                 print(f"      UID             = {_c(_GREEN, uid[:20])}...（登录成功）")
@@ -251,12 +254,39 @@ class RiskMonitor:
 
         # 结论
         print(f"\n{_c(_BOLD, '▸ 综合判断')}")
-        login_entries = [e for e in gigya_entries if "login" in e["url"].lower()]
+        login_entries = [
+            e for e in gigya_entries
+            if "accounts.login" in e["url"]
+            or ("login" in e["url"].lower()
+                and "tfa" not in e["url"].lower()
+                and "sdk.config" not in e["url"])
+        ]
+        tfa_entries = [e for e in gigya_entries if "tfa" in e["url"].lower()]
+        ids_403     = [e for e in gigya_entries if e["status"] == 403 and "IDS" in e["label"]]
+
         if login_entries:
             last = login_entries[-1]
             err = last["parsed"].get("errorCode", -1)
-            if err == 0:
-                print(f"   {_c(_GREEN, '✔ 登录成功，风控评分通过')}")
+            if err == 403101:
+                tfa_ok = tfa_entries and all(
+                    t["parsed"].get("errorCode") == 0 for t in tfa_entries if t["parsed"]
+                )
+                if tfa_ok and ids_403:
+                    print(f"   {_c(_RED, '✘ TFA 验证通过，但 apply.html 上 session 校验失败（IDS 403）')}")
+                    print(f"   {_c(_YELLOW, '   根因：两个 apiKey 各自维护 session，TFA 只建立了其中一个；')}")
+                    print(f"   {_c(_YELLOW, '   apply.html 用另一个 apiKey 做 getAccountInfo → 403 → 踢回登录页')}")
+                elif tfa_ok:
+                    print(f"   {_c(_GREEN, '✔ TFA 验证通过，登录成功')}")
+                elif tfa_entries:
+                    print(f"   {_c(_RED, '✘ TFA 验证失败（见上方 tfa 条目）')}")
+                else:
+                    print(f"   {_c(_YELLOW, '📧 账号开启了 MFA，登录后等待输入邮箱验证码（403101 = TFA Pending）')}")
+                    print(f"   {_c(_GRAY, '   主流程目前会对 MFA 账号抛 LoginError，需拆分处理。')}")
+            elif err == 0:
+                if ids_403:
+                    print(f"   {_c(_YELLOW, '△ 登录成功，但 apply.html session 校验失败（IDS 403）')}")
+                else:
+                    print(f"   {_c(_GREEN, '✔ 登录成功，风控评分通过')}")
             elif err == 403102:
                 print(f"   {_c(_RED, '✘ 风控拦截（403102）：设备/IP 评分过低，不允许登录')}")
             elif err == 401002:

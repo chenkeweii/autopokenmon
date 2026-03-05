@@ -29,12 +29,25 @@ async def login(page: Page, username: str, password: str) -> None:
     成功则正常返回，失败抛出 LoginError。
     """
     # ── Step 4: 填写账密 ──────────────────────────────────────────────────────
-    await page.goto(
-        config.POKEMON_APPOINTMENT_URL,
-        wait_until="domcontentloaded",
-        timeout=config.PAGE_LOAD_TIMEOUT_MS,
-    )
-    logger.info("Step 4 | 已加载，当前标题: %s", await page.title())
+    try:
+        await page.goto(
+            config.POKEMON_APPOINTMENT_URL,
+            wait_until="domcontentloaded",
+            timeout=config.PAGE_LOAD_TIMEOUT_MS,
+        )
+    except Exception as _nav_err:
+        _nav_err_str = str(_nav_err)
+        # ERR_ABORTED / frame detached：网站 302 跳转时 Playwright 偶尔误判为中止，
+        # 实际页面已经落地，等待 load state 即可继续
+        if "ERR_ABORTED" in _nav_err_str or "frame was detached" in _nav_err_str:
+            logger.warning("Step 4 | 导航 ERR_ABORTED，等待页面落地后继续...")
+            try:
+                await page.wait_for_load_state("domcontentloaded", timeout=15000)
+            except Exception:
+                pass  # 仍然继续，后续步骤会检测页面状态
+        else:
+            raise
+    logger.info("Step 4 | 已加载，当前标题: %s | URL: %s", await page.title(), page.url)
 
     await random_mouse_wander(page, moves=3)
     await random_action_delay()
@@ -90,6 +103,15 @@ async def login(page: Page, username: str, password: str) -> None:
         # 先记录当前 URL / 标题，便于调试
         logger.info("Step 4 | 当前 URL: %s | 标题: %s", page.url, await page.title())
 
+        # ── MFA 检测：login-mfa.html = 账号开启了邮箱验证码，单独抛出 ─────────────
+        # 注意：不要落入下面的「仍在登录页」判断，/login-mfa 含 /login 会误报
+        if "login-mfa" in page.url:
+            logger.warning(
+                "Step 4 | 账号 %s 开启了 MFA（邮箱验证码），跳转到: %s",
+                username, page.url,
+            )
+            raise LoginError(f"MFA_REQUIRED:{page.url}")
+
         # 如果仍在登录页，主动等待错误框出现（最多 5s）再读文字，
         # 防止 networkidle 后 JS 还未完成 DOM 注入导致读到空字符串。
         error_box = page.locator(".comErrorBox, p.error, .errorBoxMain, .errorBox")
@@ -107,8 +129,8 @@ async def login(page: Page, username: str, password: str) -> None:
                 raise AccountNeedsResetError(error_text)
             raise LoginError(error_text)
 
-        # 兜底：如果仍停留在登录页（URL 含 /login）则视为登录失败
-        if "/login" in page.url:
+        # 兜底：如果仍停留在登录页（URL 含 /login，且不是 MFA 页）则视为登录失败
+        if "/login" in page.url and "login-mfa" not in page.url:
             page_text = (await page.locator("body").inner_text())[:200]
             logger.warning("Step 4 | ✗ 登录后仍在登录页，URL=%s，页面片段: %s", page.url, page_text)
             raise LoginError(f"登录后未跳转，仍在登录页: {page.url}")

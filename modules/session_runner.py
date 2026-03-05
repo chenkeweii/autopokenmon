@@ -163,6 +163,12 @@ async def _process_one_account(
 
     except LoginError as exc:
         error_text = str(exc)
+        # MFA_REQUIRED: 账号开启了邮箱二步验证，属账号层面问题，
+        # 与 IP 无关，单独标 status=2，不累计连续失败计数
+        if error_text.startswith("MFA_REQUIRED:"):
+            logger.warning("账号 %s | 需 MFA 验证码，当前流程不支持，直接标记 status=2: %s", username, error_text)
+            mark_account_status(username, 2, error_text)
+            return
         if shared["ip_ban"]:
             # IP 封禁已在上个账号确认，本账号同样标 status=3
             mark_account_status(username, 3, error_text)
@@ -263,8 +269,24 @@ async def run_accounts(
         try:
             # 清空上一账号遗留的 Cookie / 本地存储，保证账号间隔离
             await _default_ctx.clear_cookies()
-            await _shared_page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
-            await _shared_page.goto("about:blank", wait_until="commit")
+
+            # Page 可能因上一轮 ERR_ABORTED / 崩溃而失效，先探活，失败则重建
+            _page_alive = True
+            try:
+                await _shared_page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+                await _shared_page.goto("about:blank", wait_until="commit")
+            except Exception as _page_err:
+                logger.warning(
+                    "账号 %s | Page 已失效（%s），重新创建 Page",
+                    account["username"], str(_page_err).split("\n")[0].strip(),
+                )
+                _page_alive = False
+                try:
+                    await _shared_page.close()
+                except Exception:
+                    pass
+                _shared_page = await _default_ctx.new_page()
+
             await _process_one_account(_shared_page, idx, len(accounts), account, shared, email_tasks)
         except Exception as exc:
             logger.error("账号 %s | Context 层意外异常: %s", account["username"], exc)
