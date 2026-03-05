@@ -59,13 +59,18 @@ cleanup() {
 setup_instance() {
     local ip=$1 port=$2 table=$3 gw=$4
     
-    # 策略路由：所有来自该 IP 的包，强制走指定路由表
-    # 使用 onlink 兼容不同网段的 IP
+    # 1. 在自定义路由表中，也加入局域网直连路由（关键！）
+    # 这样当程序以公网IP身份回包给内网客户机时，能找到路
+    ip route add 10.0.0.0/8 dev enp8s0 table "$table" 2>/dev/null || true
+    
+    # 2. 现有的公网默认路由
     ip route add default via "$gw" dev "$IFACE" onlink table "$table" 2>/dev/null || true
-    ip rule add from "$ip" lookup "$table" priority $((10000 + table)) 2>/dev/null || true
 
-    # 启动进程：使用 -b 参数绑定出站 IP
-    # -i 0.0.0.0 允许所有网卡进入，-p 监听端口，-b 绑定出站公网IP
+    # 3. 策略路由：只有目标不是内网地址时，才强制走这个表
+    # 或者简单点，给内网回包留个口子
+    ip rule add from "$ip" lookup "$table" priority $((10000 + table)) 2>/dev/null || true
+    
+    # 启动进程
     nohup "$MICROSOCKS_BIN" -i 0.0.0.0 -p "$port" -b "$ip" >> "${LOGDIR}/socks_${port}.log" 2>&1 &
 }
 

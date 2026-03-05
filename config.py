@@ -33,7 +33,7 @@ MYPAGE_URL              = "https://www.pokemoncenter-online.com/mypage/"        
 # N = N 个浏览器并行跑，账号按轮询分配给各 Worker，速度近似提升 N 倍。
 # 前提：至少配置了 N 个不同 Profile（即 N 个不同代理 IP）。
 # 建议：有几个可用 Profile 就设几；不要超过 Profile 数量，超出部分会因无可用浏览器而失败。
-CONCURRENT_BROWSERS = 2
+CONCURRENT_BROWSERS = 1
 
 # ──────────────────────────── IP 封禁重试 ────────────────────────────────────
 MIN_RETRY_INTERVAL       = 3600        # IP 被封后最短重试间隔（秒），默认 1 小时
@@ -107,7 +107,7 @@ TERMS_PAGE_LOCAL_URL = (
 # 控制1：是否真实点击登录按钮
 #   True  → 找到登录按钮并点击，然后检测登录结果（生产流程）
 #   False → 填完账密后不点击登录（开发调试，规避登录限制）
-DO_CLICK_LOGIN = True
+DO_CLICK_LOGIN = False
 
 # 控制2：是否模拟登录报错页（仅 DO_CLICK_LOGIN=False 时生效）
 #   True  → 加载本地报错页 → 检测红字 → 写入 CSV → 停止
@@ -119,6 +119,7 @@ SIMULATE_LOGIN_ERROR_PAGE = False
 #   2 → メールアドレスまたはパスワードが一致しませんでした
 #   3 → 認証に失敗しました。もう一度操作を行ってください
 #   エラーが発生しました。時間をおいてから再度お試しください。
+# 
 LOGIN_ERROR_TEST_NUM = 1
 
 # 控制3：是否执行验证码流程（Steps 5-7）
