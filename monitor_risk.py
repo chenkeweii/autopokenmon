@@ -52,9 +52,11 @@ def _c(color, text): return f"{color}{text}{_R}"
 WATCH_DOMAINS = (
     "gigya.com",
     "cdns.gigya.com",
+    "id.pokemoncenter-online.com",   # Gigya IDS 托管端点（accounts.login 在此）
     "treasuredata.com",
     "collect.igodigital.com",
     "cquotient.com",
+    "pokemoncenter-online.com",      # 直接监听登录请求
 )
 
 # Gigya errorCode 含义表
@@ -65,6 +67,7 @@ GIGYA_ERROR_CODES = {
     401001:  (_RED,    "未授权"),
     401002:  (_RED,    "密码错误"),
     401003:  (_RED,    "登录失败（通用）"),
+    401022:  (_YELLOW, "⚠️  账号待重置密码（非风控）"),
     403010:  (_RED,    "reCAPTCHA 验证失败"),
     403100:  (_RED,    "账号被封禁"),
     403102:  (_RED,    "⚠️  设备/IP 被风控拦截（评分过低）"),
@@ -81,6 +84,14 @@ class RiskMonitor:
 
     def _label_url(self, url: str) -> str:
         """给 URL 打上来源标签"""
+        # id.pokemoncenter-online.com/accounts.* 是 Gigya IDS 托管端点
+        if "id.pokemoncenter-online.com" in url:
+            if "accounts.login"           in url: return "Gigya·login"
+            if "accounts.getAccountInfo"  in url: return "Gigya·getInfo"
+            if "accounts.tfa"             in url: return "Gigya·tfa"
+            if "accounts."               in url: return "Gigya·IDS"
+            if "sdk.config"              in url: return "Gigya·sdk"
+            return "Gigya·IDS"
         if "gigya" in url:
             if "accounts.login"      in url: return "Gigya·login"
             if "accounts.initRegistration" in url: return "Gigya·initReg"
@@ -90,6 +101,10 @@ class RiskMonitor:
             if "ids."                in url: return "Gigya·IDS"
             if "bootloader"          in url or "bootstrap" in url: return "Gigya·bootstrap"
             return "Gigya"
+        if "pokemoncenter-online.com" in url:
+            if "login" in url: return "Pokemon·login"
+            if "lottery" in url: return "Pokemon·lottery"
+            return "Pokemon"
         if "treasuredata" in url or "igodigital" in url:
             return "TreasureData"
         if "cquotient" in url:
@@ -157,9 +172,14 @@ class RiskMonitor:
         latency = f"{e['latency']:.0f}ms" if e["latency"] else "?"
         p       = e["parsed"]
 
-        # 只详细打印 Gigya 条目
-        if "Gigya" not in label:
+        # TreasureData / Salesforce / Gigya SDK 静默
+        if "TreasureData" in label or "Salesforce" in label or label in ("Gigya·sdk", "Gigya·bootstrap"):
             print(_c(_GRAY, f"  [{label}] HTTP {status}  {latency}  {e['url'][:80]}"))
+            return
+
+        # Pokemon 域名：打印 URL 和状态码（观察登录跳转）
+        if "Pokemon" in label:
+            print(_c(_BLUE, f"  [{label}] HTTP {status}  {latency}  {e['url'][:100]}"))
             return
 
         # Gigya 详细
@@ -241,13 +261,17 @@ class RiskMonitor:
                 print(f"   {_c(_RED, '✘ 风控拦截（403102）：设备/IP 评分过低，不允许登录')}")
             elif err == 401002:
                 print(f"   {_c(_YELLOW, '△ 密码错误（401002）：账号问题，非风控')}")
+            elif err == 401022:
+                print(f"   {_c(_YELLOW, '△ 账号待重置密码（401022）：非风控，该账号需在网站重置密码后再用')}")
             else:
                 color, meaning = GIGYA_ERROR_CODES.get(err, (_YELLOW, "未知"))
                 print(f"   {_c(color, f'△ errorCode={err}：{meaning}')}")
         elif not gigya_entries:
             print(f"   {_c(_YELLOW, '? 未捕获到任何 Gigya 请求，页面可能未完全加载')}")
         else:
-            print(f"   {_c(_YELLOW, '? 未捕获到登录请求（仅页面初始化请求）')}")
+            # 有 Gigya 初始化请求，但没有 accounts.login
+            print(f"   {_c(_YELLOW, '? 没有捕获到 accounts.login 请求')}")
+            print(f"   {_c(_GRAY, '   可能原因：表单未提交（输入事件没有触发表单验证）/ 还在登录页（风控拦截）')}")
 
         print()
 
@@ -327,13 +351,31 @@ async def run(endpoint: str, email: str | None, password: str | None, pause: boo
 
         current_url = page.url
         print(f"  当前 URL : {current_url}")
-        print(f"  页面标题 : {await page.title()}")
+        try:
+            print(f"  页面标题 : {await page.title()}")
+        except Exception:
+            print("  页面标题 : （获取中，页面正在跳转）")
+        # 如果跳转到了登录页，再等一次 networkidle 确保表单渲染完毕
+        if "/login" in page.url or page.url != config.POKEMON_APPOINTMENT_URL:
+            try:
+                await page.wait_for_load_state("networkidle", timeout=10000)
+                print(f"  跳转后 URL : {page.url}")
+            except Exception:
+                pass
         print()
 
         # ── 2. 可选：执行登录测试 ──────────────────────────────────────────
         if email and password:
             print(_c(_CYAN, "▸ 开始登录测试..."))
             try:
+                # 若还未进入登录页则先等跳转
+                if "/login" not in page.url:
+                    try:
+                        await page.wait_for_url("**/login**", timeout=8000)
+                    except Exception:
+                        pass
+                print(f"  登录页 URL : {page.url}")
+
                 # 等输入框出现
                 email_input = page.locator(
                     'input[type="email"], input[name="email"], input[name="mail"]'
@@ -342,14 +384,15 @@ async def run(endpoint: str, email: str | None, password: str | None, pause: boo
 
                 await email_input.click()
                 await asyncio.sleep(0.5)
-                await email_input.fill(email)
+                # 用 type 而非 fill，触发完整 input/change 事件，表单验证才会正常识别
+                await email_input.press_sequentially(email, delay=80)
                 await asyncio.sleep(0.8)
 
                 pwd_input = page.locator('input[type="password"]').first
                 await pwd_input.wait_for(state="visible", timeout=5000)
                 await pwd_input.click()
                 await asyncio.sleep(0.5)
-                await pwd_input.fill(password)
+                await pwd_input.press_sequentially(password, delay=80)
                 await asyncio.sleep(1.0)
 
                 # 点击登录
@@ -357,8 +400,17 @@ async def run(endpoint: str, email: str | None, password: str | None, pause: boo
                 await btn.click()
                 print(_c(_CYAN, "▸ 已点击登录，等待响应..."))
 
-                await page.wait_for_load_state("networkidle", timeout=20000)
-                print(f"  登录后 URL : {page.url}")
+                # 等待页面跳转或错误出现（最多 25s）
+                try:
+                    await page.wait_for_load_state("networkidle", timeout=25000)
+                except Exception:
+                    pass  # 超时也继续，读取已捕获的数据
+
+                try:
+                    print(f"  登录后 URL   : {page.url}")
+                    print(f"  登录后标题   : {await page.title()}")
+                except Exception:
+                    pass
 
             except Exception as e:
                 print(_c(_RED, f"  登录操作异常: {e}"))
