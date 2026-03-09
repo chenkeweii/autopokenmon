@@ -276,7 +276,9 @@ async def run_accounts(
             # Page 可能因上一轮 ERR_ABORTED / 崩溃而失效，先探活，失败则重建
             _page_alive = True
             try:
-                await _shared_page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+                # chrome://newtab 等特殊页面禁止访问 localStorage，仅在 http/https 页面清除
+                if _shared_page.url.startswith(("http://", "https://")):
+                    await _shared_page.evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
                 await _shared_page.goto("about:blank", wait_until="commit")
             except Exception as _page_err:
                 logger.warning(
