@@ -259,7 +259,34 @@ async def login(page: Page, username: str, password: str) -> None:
         # OTP 时间基准必须在点击前设置：Gigya 收到请求后立即发邮件（< 1s），
         # 若在 MFA 检测后才设 since_ts，邮件 INTERNALDATE 会早于 since_ts 被过滤掉
         otp_wait_since = time.time()
-        await human_click(page, login_btn)
+
+        # 点击登录按钮，最多重试 3 次
+        # 手机端：键盘未完全收起时第一次点击会被系统截走（用于关闭键盘），页面不会有任何响应
+        # 判断依据：点击后 3s 内 URL 未发生任何变化 → 说明表单根本没有提交 → 重试
+        for _click_attempt in range(3):
+            if _click_attempt > 0:
+                logger.warning(
+                    "Step 4b | 点击后 3s 页面无响应，疑似被手机键盘截走，第 %d 次重试...",
+                    _click_attempt + 1,
+                )
+                await page.evaluate("() => { if (document.activeElement) document.activeElement.blur(); }")
+                await asyncio.sleep(0.8)
+
+            _url_before = page.url
+            await human_click(page, login_btn)
+
+            # 等待 URL 变化（表单已提交），3s 超时
+            try:
+                await page.wait_for_function(
+                    f"() => location.href !== {repr(_url_before)}",
+                    timeout=3000,
+                )
+                logger.info("Step 4b | ✓ 第 %d 次点击生效，页面开始响应", _click_attempt + 1)
+                break  # URL 变了，点击成效
+            except Exception:
+                if _click_attempt == 2:
+                    logger.warning("Step 4b | 3 次点击均未触发页面跳转，继续等待后续检测...")
+
         # wait_for_load_state("networkidle") 在有大量 Analytics/GTM 追踪请求的页面
         # 永远不会触发（60s 超时）。改为等 "load" + 短暂固定等待，确保 Gigya
         # 回包后 DOM 错误框已渲染。Gigya 响应早于 page load，DOM 注入通常在 1~2s 内完成。
