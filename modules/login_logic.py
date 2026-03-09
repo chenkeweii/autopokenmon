@@ -252,6 +252,9 @@ async def login(page: Page, username: str, password: str) -> None:
         # Playwright 会错过事件导致整个 context manager 挂起直到超时。
         # 改用 wait_for_load_state("networkidle")：等待网络请求静默（JS 渲染完成），
         # 确保登录失败时的错误框文字已经挂载到 DOM。
+        # OTP 时间基准必须在点击前设置：Gigya 收到请求后立即发邮件（< 1s），
+        # 若在 MFA 检测后才设 since_ts，邮件 INTERNALDATE 会早于 since_ts 被过滤掉
+        otp_wait_since = time.time()
         await human_click(page, login_btn)
         # wait_for_load_state("networkidle") 在有大量 Analytics/GTM 追踪请求的页面
         # 永远不会触发（60s 超时）。改为等 "load" + 短暂固定等待，确保 Gigya
@@ -326,7 +329,10 @@ async def login(page: Page, username: str, password: str) -> None:
         logger.info("Step 5-7 | [调试] 跳过验证码流程，直接进入预约步骤")
         return
 
-    otp_wait_since = time.time()
+    # otp_wait_since 已在点击登录按钮前设置（DO_CLICK_LOGIN=True 时）
+    # 调试路径（DO_CLICK_LOGIN=False）没有点击动作，在此兜底设置
+    if "otp_wait_since" not in locals():
+        otp_wait_since = time.time()
 
     # Step 5: 跳转验证码页
     # 生产环境：登录后浏览器已在真实 MFA 页（login-mfa.html），直接跳过 goto
