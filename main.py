@@ -237,13 +237,13 @@ async def main():
                 await asyncio.wait(_pending_email, timeout=3)
         except Exception:
             pass
-        # 停止 IDLE 监听（最多等 6 秒，超时直接放弃）
+        # 停止 IDLE 监听（最多等 6 秒，超时直接放弃；线程是 daemon，进程退出时自动结束）
         if monitor_task is not None:
             stop_idle_monitor()
             try:
                 await asyncio.wait_for(asyncio.shield(monitor_task), timeout=6)
             except (asyncio.TimeoutError, asyncio.CancelledError):
-                pass
+                monitor_task.cancel()  # 取消 _watcher 轮询协程，不再占用事件循环
 
 
 if __name__ == "__main__":

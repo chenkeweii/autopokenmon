@@ -98,19 +98,40 @@ def _appoint_put(mail_dict: dict) -> None:
         _event_loop.call_soon_threadsafe(_wakeup_all)
 
 
+_monitor_thread: threading.Thread | None = None
+
+
 def start_idle_monitor(email_addr: str, auth_code: str) -> asyncio.Task:
     """
     启动后台 IDLE 监听，立即返回 asyncio.Task。
     新邮件到达时自动写入 data/emails.csv，同时推送到内存 Queue 供即时唤醒。
     调用 stop_idle_monitor() 停止。
     """
-    global _stop_event, _monitor_task, _event_loop
+    global _stop_event, _monitor_task, _monitor_thread, _event_loop
     _stop_event.clear()
     _event_loop = asyncio.get_running_loop()
     start_ts = time.time()  # 记录启动时刻，传给线程做 catch-up
-    _monitor_task = asyncio.create_task(
-        asyncio.to_thread(_blocking_idle_monitor_loop, email_addr, auth_code, _stop_event, start_ts)
+
+    # daemon=True：进程退出时线程自动被杀，不会因为线程还活着而卡住
+    # 不使用 asyncio.to_thread / ThreadPoolExecutor：
+    #   asyncio.run() 结束时会调用 shutdown_default_executor() 等待所有 executor 线程，
+    #   那样即使 finally 里已经超时放弃，进程仍无法退出
+    _monitor_thread = threading.Thread(
+        target=_blocking_idle_monitor_loop,
+        args=(email_addr, auth_code, _stop_event, start_ts),
+        daemon=True,
+        name="imap-idle-monitor",
     )
+    _monitor_thread.start()
+
+    # 返回一个纯 asyncio 协程 Task（每秒轮询线程是否存活）
+    # 不占用线程池，asyncio.run() 退出时不会因此阻塞
+    async def _watcher():
+        while _monitor_thread and _monitor_thread.is_alive():
+            await asyncio.sleep(1)
+        logger.info("[监听线程] 已停止")
+
+    _monitor_task = asyncio.create_task(_watcher())
     return _monitor_task
 
 
