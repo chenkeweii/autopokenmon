@@ -262,30 +262,34 @@ async def login(page: Page, username: str, password: str) -> None:
 
         # 点击登录按钮，最多重试 3 次
         # 手机端：键盘未完全收起时第一次点击会被系统截走（用于关闭键盘），页面不会有任何响应
-        # 判断依据：点击后 3s 内 URL 未发生任何变化 → 说明表单根本没有提交 → 重试
+        # 判断依据：点击后 4s 内未收到 Gigya accounts.login 响应 → 表单根本没提交 → 重试
+        # 注意：不能用 URL 变化判断——登录失败时 URL 仍在 /login/，URL 永远不变
         for _click_attempt in range(3):
             if _click_attempt > 0:
                 logger.warning(
-                    "Step 4b | 点击后 3s 页面无响应，疑似被手机键盘截走，第 %d 次重试...",
+                    "Step 4b | 点击后 4s 未收到 Gigya 响应，疑似被手机键盘截走，第 %d 次重试...",
                     _click_attempt + 1,
                 )
                 await page.evaluate("() => { if (document.activeElement) document.activeElement.blur(); }")
                 await asyncio.sleep(0.8)
 
-            _url_before = page.url
+            # 先注册 wait_for_response，再点击，避免响应在注册前到达
+            _gigya_resp_future = asyncio.ensure_future(
+                page.wait_for_response(
+                    lambda r: "accounts.login" in r.url and "gigya.com" in r.url,
+                    timeout=4000,
+                )
+            )
             await human_click(page, login_btn)
 
-            # 等待 URL 变化（表单已提交），3s 超时
             try:
-                await page.wait_for_function(
-                    f"() => location.href !== {repr(_url_before)}",
-                    timeout=3000,
-                )
-                logger.info("Step 4b | ✓ 第 %d 次点击生效，页面开始响应", _click_attempt + 1)
-                break  # URL 变了，点击成效
+                await _gigya_resp_future
+                logger.info("Step 4b | ✓ 第 %d 次点击生效，Gigya 已收到登录请求", _click_attempt + 1)
+                break  # 收到 Gigya 响应，按钮点击生效
             except Exception:
+                _gigya_resp_future.cancel()
                 if _click_attempt == 2:
-                    logger.warning("Step 4b | 3 次点击均未触发页面跳转，继续等待后续检测...")
+                    logger.warning("Step 4b | 3 次点击均未收到 Gigya 响应，继续等待后续检测...")
 
         # wait_for_load_state("networkidle") 在有大量 Analytics/GTM 追踪请求的页面
         # 永远不会触发（60s 超时）。改为等 "load" + 短暂固定等待，确保 Gigya
