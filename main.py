@@ -151,6 +151,18 @@ async def main():
         )
         slices = _split_accounts(pending, n_workers)
 
+        # ── Android 模式：跳过 Nstbrowser，直连手机 Chrome ──────────────────
+        if config.ANDROID_MODE:
+            logger.info("Step 1 | [Android] 直连模式，跳过 Profile 同步")
+            cdp_endpoint = f"http://127.0.0.1:{config.ANDROID_CDP_PORT}"
+            logger.info("Step 1 | [Android] CDP 端点: %s", cdp_endpoint)
+            async with CDPSession(endpoint=cdp_endpoint) as session:
+                await run_accounts(session.browser, pending, email_tasks)
+            exit_subject = "运行完成"
+            exit_body    = f"Android 模式，共处理 {len(pending)} 个账号"
+            return
+
+        # ── 正常模式：Nstbrowser ──────────────────────────────────────────────
         # Step 1: 统一同步一次 Profile（所有 Worker 共用，避免重复调用 Nstbrowser API）
         logger.info("Step 1 | 启动前同步 Profile 列表...")
         await sync_profiles_once()

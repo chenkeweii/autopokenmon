@@ -11,6 +11,13 @@
 NST_HOST   = "localhost:8848"
 NST_API_KEY = "15fd6cab-f7f9-4ce2-8e4c-251ff2133e57"
 
+# ──────────────────────── Android Chrome 直连模式 ────────────────────────
+# True  → 跳过 Nstbrowser，直接通过 ADB 端口转发连接手机 Chrome（单账号顺序跑）
+#          使用前需先执行：adb forward tcp:9222 localabstract:chrome_devtools_remote
+# False → 正常走 Nstbrowser 指纹浏览器流程
+ANDROID_MODE     = False
+ANDROID_CDP_PORT = 9222  # adb forward 转发到本地的端口
+
 # ──────────────────────── 批量创建环境（setup_profiles.py 用）────────────────────
 # 有多少个端口就创建多少个 Profile，每个 Profile 绑定一个唯一的 socks5 代理
 PROXY_PROTOCOL   = "socks5"     # 代理协议：socks5 / http / https
