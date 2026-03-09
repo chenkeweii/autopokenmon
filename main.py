@@ -227,18 +227,23 @@ async def main():
         # 发送退出通知
         if exit_body:
             await asyncio.to_thread(send_notify, exit_subject, exit_body)
-        # 统一等待所有邮件确认后台任务
+        # 统一等待所有邮件确认后台任务（手动停止时最多等 3 秒，超时直接取消）
         try:
             _pending_email = [t for t in email_tasks if not t.done()]
             if _pending_email:
                 logger.info("finally | 等候 %d 个残留邮件确认后台任务...", len(_pending_email))
-                await asyncio.gather(*_pending_email, return_exceptions=True)
+                for t in _pending_email:
+                    t.cancel()
+                await asyncio.wait(_pending_email, timeout=3)
         except Exception:
             pass
-        # 停止 IDLE 监听
+        # 停止 IDLE 监听（最多等 6 秒，超时直接放弃）
         if monitor_task is not None:
             stop_idle_monitor()
-            await asyncio.gather(monitor_task, return_exceptions=True)
+            try:
+                await asyncio.wait_for(asyncio.shield(monitor_task), timeout=6)
+            except (asyncio.TimeoutError, asyncio.CancelledError):
+                pass
 
 
 if __name__ == "__main__":
