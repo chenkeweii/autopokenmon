@@ -229,6 +229,10 @@ async def login(page: Page, username: str, password: str) -> None:
 
     # ── Step 4b: 登录按钮 / 调试分支 ─────────────────────────────────────────
     if config.DO_CLICK_LOGIN:
+        # 手机端：输完密码后软键盘处于弹出状态，第一次点击会被系统截走用于收起键盘
+        # 先 blur 掉当前输入框焦点，等待键盘收起动画（约 300ms）后再点击登录按钮
+        await page.evaluate("() => { if (document.activeElement) document.activeElement.blur(); }")
+        await asyncio.sleep(0.6)  # 等键盘完全收起
         login_btn = page.locator('#form1Button, button[type="submit"], input[type="submit"], a.loginBtn').first
         try:
             await login_btn.wait_for(state="visible", timeout=config.ELEMENT_WAIT_TIMEOUT_MS)
