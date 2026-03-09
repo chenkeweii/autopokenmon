@@ -264,6 +264,7 @@ async def login(page: Page, username: str, password: str) -> None:
         # 手机端：键盘未完全收起时第一次点击会被系统截走（用于关闭键盘），页面不会有任何响应
         # 判断依据：点击后 4s 内未收到 Gigya accounts.login 响应 → 表单根本没提交 → 重试
         # 注意：不能用 URL 变化判断——登录失败时 URL 仍在 /login/，URL 永远不变
+        # 用 page.on("response") 事件监听代替 wait_for_response（兼容性更好）
         for _click_attempt in range(3):
             if _click_attempt > 0:
                 logger.warning(
@@ -273,21 +274,22 @@ async def login(page: Page, username: str, password: str) -> None:
                 await page.evaluate("() => { if (document.activeElement) document.activeElement.blur(); }")
                 await asyncio.sleep(0.8)
 
-            # 先注册 wait_for_response，再点击，避免响应在注册前到达
-            _gigya_resp_future = asyncio.ensure_future(
-                page.wait_for_response(
-                    lambda r: "accounts.login" in r.url and "gigya.com" in r.url,
-                    timeout=4000,
-                )
-            )
+            _gigya_ev = asyncio.Event()
+
+            def _on_gigya_resp(response, _ev=_gigya_ev):
+                if "accounts.login" in response.url and "gigya.com" in response.url:
+                    _ev.set()
+
+            page.on("response", _on_gigya_resp)
             await human_click(page, login_btn)
 
             try:
-                await _gigya_resp_future
+                await asyncio.wait_for(_gigya_ev.wait(), timeout=4.0)
                 logger.info("Step 4b | ✓ 第 %d 次点击生效，Gigya 已收到登录请求", _click_attempt + 1)
-                break  # 收到 Gigya 响应，按钮点击生效
-            except Exception:
-                _gigya_resp_future.cancel()
+                page.remove_listener("response", _on_gigya_resp)
+                break
+            except asyncio.TimeoutError:
+                page.remove_listener("response", _on_gigya_resp)
                 if _click_attempt == 2:
                     logger.warning("Step 4b | 3 次点击均未收到 Gigya 响应，继续等待后续检测...")
 
