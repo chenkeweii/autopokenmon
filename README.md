@@ -17,6 +17,7 @@
 | 并发模型 | asyncio `gather` + `ContextVar` | 多 Worker 协程并行，日志自动附加 Worker 标签，单事件循环无线程锁问题 |
 | 数据存储 | stdlib `csv` + 原子写入 | 轻量无依赖；`.tmp` 临时文件 + `os.replace` 防数据截断 |
 | 通知推送 | smtplib SMTP_SSL | 同一邮箱账号收发，无需额外服务 |
+| **Android 直连** | ADB 端口转发 + CDP | `ANDROID_MODE=True` 时跳过 Nstbrowser，直接控制手机 Chrome，复用真实浏览器上下文 |
 
 ---
 
@@ -410,6 +411,58 @@ python risk_overlay.py --log logs/risk_log.jsonl --change baseline
 # 可选：同时开启批量进度悬浮窗
 python desk_monitor.py
 ```
+
+---
+
+## Android 模式（ADB 直连手机 Chrome）
+
+> 适用场景：PC 脚本被风控拦截，而手机浏览器（有大量历史上下文）可以正常通过。  
+> 原理：通过 ADB 端口转发将手机 Chrome 的 CDP 接口映射到本地，Playwright 直连控制，完全跳过 Nstbrowser。
+
+### 前提条件
+
+1. 手机开启 **USB 调试**，通过 USB 或 Wi-Fi 连接到 PC
+2. 手机 Chrome 已打开（任意页面即可）
+3. 手机已开启 VPN，连接到 **IIJ 节点**（AWS/GCP 节点会被站点拦截）
+
+### 启动步骤
+
+**Step 1：建立 ADB 转发**
+
+```powershell
+# 确认设备已连接
+adb devices
+
+# 将手机 Chrome CDP 端口映射到本机 9222
+adb forward tcp:9222 localabstract:chrome_devtools_remote
+
+# 验证（应返回包含宝可梦页面的 JSON 数组）
+curl http://localhost:9222/json
+```
+
+**Step 2：启用 Android 模式**
+
+在 `config.py` 中修改：
+
+```python
+ANDROID_MODE     = True   # 改为 True
+ANDROID_CDP_PORT = 9222   # 与 adb forward 的本地端口一致
+```
+
+**Step 3：运行脚本**
+
+```bash
+python main.py
+```
+
+脚本将跳过 Nstbrowser Profile 同步，直接连接 `http://127.0.0.1:9222`，通过 CDP 控制手机 Chrome 完成登录和预约。
+
+### 注意事项
+
+- Android 模式下为**单账号顺序处理**，不支持多 Worker 并发
+- 每次手机 USB 重新连接后需重新执行 `adb forward`
+- 脚本运行期间请勿手动操作手机 Chrome，避免标签页切换干扰
+- 若 `adb forward` 后 `localhost:9222` 无响应，检查手机 Chrome 是否在前台运行
 
 ---
 
