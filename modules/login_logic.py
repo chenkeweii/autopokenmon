@@ -341,7 +341,7 @@ async def login(page: Page, username: str, password: str) -> None:
             except Exception:
                 pass  # 5s 内没出现错误框，继续后续兜底判断
 
-        if await error_box.count() > 0:
+        if await error_box.count() > 0 and "login-mfa" not in page.url:
             error_text = (await error_box.first.inner_text()).strip()
             logger.warning("Step 4 | ✗ 登录失败，错误信息: 「%s」", error_text)
             # 「エラーが発生しました。時間をおいてから再度お試しください。」= 账号需重置密码，与 IP 无关，单独抛出
